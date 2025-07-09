@@ -8,16 +8,15 @@
 > (혹시 pip 패키지들 충돌 방지하기 위함)
 
 ```
-python -m venv venv
-source venv/bin/activate  # macOS / Linux
-venv\Scripts\activate     # Windows
+
+맥은몰라욤 # macOS / Linux
+
+conda activate <가상환경이름># Windows
 ```
 
 ---
 
-### 라이브러리 설치
-
-requirements.txt 를 기준으로 설치:
+### 라이브러리 설치:requirements.txt 를 기준으로 설치
 
 ```
 pip install -r requirements.txt
@@ -37,28 +36,26 @@ pip install -r requirements.txt
 uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-- `src.main` → main.py 위치 기준 (모듈 경로)
-- `app` → FastAPI 인스턴스 변수명
-- `--reload` → 코드 변경 시 서버 자동 재시작
-
 ---
 
----
-
-참고) 추후 디렉토리 생성 시 모든 파일에  
+참고1) 추후 디렉토리 생성 시 모든 파일에  
 `__init__.py` 넣어줘야함. **설사 빈 파일이라도 상관없어요.**  
-파이썬이 해당 디렉토리를 패키지로 인식해서 추후 import하기 위함임.
+파이썬이 해당 디렉토리를 패키지로 인식하는 수단이 저 init이기 때문임.
+저거 없으면 추후 import 못함 .
 
 ---
 
-참고2) import 시  
-같은 디렉토리 안에 있으면
+참고2)import 문법
+import 시 주의
 
+model.py를 import하고 싶은 상황에서
+
+상황 1. 같은 디렉토리 안에 있으면
 ```
 from .model import TradeDetail  # .model.py 가 같은 디렉토리에 있으면 이런 식으로 표기
 ```
 
-아니라면..
+상황 2. 아니라면(다른디렉토리)..
 
 ```
 from app.database.core import Base
@@ -76,15 +73,6 @@ from app.database.core import Base
 
 ## 🗂️ 디렉토리 설명
 
----
-
-## ⚙️ 설계 컨셉
-
-### 도메인 분리 개발
-
-- 하나의 앱 안에서 모든 기능을 뒤섞지 않고,
-- **도메인 단위로 폴더를 분리**
-- 각 도메인은 독립적으로 개발 및 유지보수 가능
 
 ---
 
@@ -104,16 +92,11 @@ from app.database.core import Base
 
 ---
 
-### `src` 실제 우리가 개발 제일 많이할 곳
+### `src` 실제 우리가 개발 제일 많이할 곳,MVC모델 기반 
 
-도메인으로 디렉토리 분리  
-ex) `http://127.0.0.1:8000/api/v1/data_lab`
-
-> 이 엔드포인트에 필요한  
-> 함수 / 루트 정의
-
-- 실제 **서비스 도메인 코드가 들어가는 최상위 폴더**
-- 각 도메인별로 폴더로 분리되어 있음 (도메인 분리 설계)
+## 도메인 분리 개발
+- **도메인에 필요한 함수 단위로 폴더를 분리** (=ex url/my_page 등 페이지 단위로 분리)
+- 각 도메인은 독립적으로 개발 및 유지보수 가능
 
   - `account` → 회원, 계좌 관련 도메인
   - `auth` → 인증/인가 모듈
@@ -124,9 +107,10 @@ ex) `http://127.0.0.1:8000/api/v1/data_lab`
 - 각 도메인 폴더 안에는 **MVC 구조**로 파일이 배치됨
   - **Model** → DB 모델 정의
   - **route.py** → 라우터, 컨트롤러 (API 엔드포인트)
-  - **Controller / Service** → 비즈니스 로직 처리
+  - **Service** → 비즈니스 로직 처리
   - **schemas** → API 처리
-
+  - **repository** → API 처리
+  
 ---
 
 ### `main.py`
