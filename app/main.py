@@ -3,10 +3,12 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.core.config import settings
 from app.database.core import SessionLocal
-from app.src.data_lab.rank.routes import router as rank_router
+from app.src.account.routes import router as account_router
 
 app = FastAPI(title=settings.PROJECT_NAME)
-app.include_router(rank_router, prefix="/api/v1")
+
+# Include routers
+app.include_router(account_router, prefix="/api/v1", tags=["accounts"])
 
 
 @app.get("/api/v1/")

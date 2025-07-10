@@ -1,42 +1,40 @@
-# Account Schemas
-# API 요청/응답을 위한 Pydantic 스키마를 정의합니다.
-
 from pydantic import BaseModel
-from typing import Optional
-from datetime import datetime
-
+from typing import List, Optional
 
 class AccountBase(BaseModel):
-    """계좌 기본 스키마"""
     account_number: str
-    account_name: str
-    bank_name: str
-    balance: float
-
 
 class AccountCreate(AccountBase):
-    """계좌 생성 요청 스키마"""
-    user_id: int
-
+    user_id: Optional[str] = None  # Optional로 변경 (query param에서 설정)
 
 class AccountUpdate(BaseModel):
-    """계좌 업데이트 요청 스키마"""
-    account_name: Optional[str] = None
-    balance: Optional[float] = None
-
+    account_number: Optional[str] = None
 
 class AccountResponse(AccountBase):
-    """계좌 응답 스키마"""
     id: int
-    user_id: int
-    created_at: datetime
-    updated_at: datetime
-
+    user_id: str  # VARCHAR(50)로 변경
+    
     class Config:
         from_attributes = True
 
-
 class AccountListResponse(BaseModel):
-    """계좌 목록 응답 스키마"""
-    accounts: list[AccountResponse]
-    total_count: int
+    message: str
+    data: List[dict]
+
+class ErrorResponse(BaseModel):
+    message: str = "오류가 발생했습니다."
+
+# User 스키마 추가
+class UserBase(BaseModel):
+    nickname: Optional[str] = None
+    age: Optional[int] = None
+    gender: Optional[str] = None  # 'male', 'female'
+
+class UserCreate(UserBase):
+    id: str  # VARCHAR(50)
+
+class UserResponse(UserBase):
+    id: str
+    
+    class Config:
+        from_attributes = True
