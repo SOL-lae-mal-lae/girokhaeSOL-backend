@@ -34,10 +34,10 @@ pip install -r requirements.txt
 ### uvicorn 실행 (FastAPI 예시)
 
 ```
-uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-- `src.main` → main.py 위치 기준 (모듈 경로)
+- `app.main` → main.py 위치 기준 (모듈 경로)
 - `app` → FastAPI 인스턴스 변수명
 - `--reload` → 코드 변경 시 서버 자동 재시작
 
@@ -45,13 +45,13 @@ uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
 
 ---
 
-참고) 추후 디렉토리 생성 시 모든 파일에  
-`__init__.py` 넣어줘야함. **설사 빈 파일이라도 상관없어요.**  
+참고) 추후 디렉토리 생성 시 모든 폴더에  
+`__init__.py` 넣어줘야함. **설사! 빈 파일이라도 상관없어요.**  
 파이썬이 해당 디렉토리를 패키지로 인식해서 추후 import하기 위함임.
 
 ---
 
-참고2) import 시  
+참고2) model import 시  
 같은 디렉토리 안에 있으면
 
 ```
@@ -61,7 +61,7 @@ from .model import TradeDetail  # .model.py 가 같은 디렉토리에 있으면
 아니라면..
 
 ```
-from app.database.core import Base
+from app.database.model import Base
 ```
 
 이런 식으로 **모든 경로를 작성해주어야 하며**,  
@@ -124,8 +124,9 @@ ex) `http://127.0.0.1:8000/api/v1/data_lab`
 - 각 도메인 폴더 안에는 **MVC 구조**로 파일이 배치됨
   - **Model** → DB 모델 정의
   - **route.py** → 라우터, 컨트롤러 (API 엔드포인트)
-  - **Controller / Service** → 비즈니스 로직 처리
+  - **Service** → 비즈니스 로직 처리
   - **schemas** → API 처리
+    **repository** -> db연결
 
 ---
 
@@ -137,9 +138,8 @@ ex) `http://127.0.0.1:8000/api/v1/data_lab`
 
 ### `logging.py`
 
-디버깅 코드 / 에러 코드 여기에 모아놓아요~  
-(추후 서버 켰는데 디버깅 코드 너무 많이 나와서  
-어디서 왔는지 알 수 없는 거 방지하기 위함)
+디버깅 코드 / 에러 코드 터미널에서 볼 수 있도록 도와주는 모듈입니다.  
+(오류 추적하기 편리해요)
 
 ---
 
