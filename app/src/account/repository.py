@@ -5,9 +5,6 @@ from .schemas import AccountCreate, AccountUpdate
 from app.src.common_models.users.model import User
 from app.logging import log_debug, log_info, log_error
 
-
-
-
 class AccountRepository:
     def __init__(self, db: Session):
         self.db = db
@@ -93,4 +90,3 @@ class AccountRepository:
             self.db.rollback()
             return False
     
-  
