@@ -35,7 +35,9 @@ def get_monthly_trade_logs_by_user_id(
     user_id = userId.strip()
     year_month = yearMonth.strip()
     service = TradeLogService(db)
-    return service.get_monthly_trade_logs_by_user_id(user_id, year_month)
+    result = service.get_monthly_trade_logs_by_user_id(user_id, year_month)
+
+    return {"message": "매매일지 월간 조회 완료", "data" : result}
   except HTTPException:
     raise
   except Exception:
