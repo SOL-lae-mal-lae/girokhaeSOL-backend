@@ -8,7 +8,7 @@ class TradeLogBase(BaseModel):
     rationale: Optional[str] = None
     evaluation: Optional[str] = None
 
-class TradeLogCreate(TradeLogBase):
+class TradeLogCreate(BaseModel):
     pass
 
 class TradeLogUpdate(BaseModel):
@@ -16,6 +16,13 @@ class TradeLogUpdate(BaseModel):
 
 class TradeLogMonthlyData(BaseModel):
     dates: List[str]
+    total_buy_amount: float
+    total_sell_amount: float
+    profit_rate: float
+    total_commission_and_tax: float
+    sentiment: List[str]
+    top_buy: List[str]
+
 
 class TradeLogMonthlyResponse(BaseModel):
     message: str
