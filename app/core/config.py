@@ -1,11 +1,11 @@
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "SoL Project"
-    API_V1_STR: str = "/api/v1"
-    HOST: str = "127.0.0.1"
-    PORT: int = 8000
-    DEBUG: bool = True
+    PROJECT_NAME: str
+    API_V1_STR: str 
+    HOST: str 
+    PORT: int 
+    DEBUG: bool 
 
     DB_HOST: str
     DB_PORT: int

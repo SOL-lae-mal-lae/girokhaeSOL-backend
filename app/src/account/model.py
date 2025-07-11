@@ -1,15 +1,7 @@
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
+from app.database.core import Base
+from app.src.common_models.users import User
 
-Base = declarative_base()
-
-class User(Base):
-    __tablename__ = "users"
-    
-    id = Column(String(50), primary_key=True, index=True)
-    nickname = Column(String(25))
-    age = Column(Integer)
-    gender = Column(String(10))  # ex: 'male', 'female'
 
 class Account(Base):
     __tablename__ = "accounts"
