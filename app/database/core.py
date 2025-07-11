@@ -25,3 +25,11 @@ SessionLocal = sessionmaker(
 
 # Base 클래스 (모델 정의 시 상속)
 Base = declarative_base()
+
+# 의존성: DB 세션 가져오기
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

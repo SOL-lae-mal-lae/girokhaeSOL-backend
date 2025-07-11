@@ -8,7 +8,8 @@
 > (혹시 pip 패키지들 충돌 방지하기 위함)
 
 ```
-conda activate <가상환경이름># Windows
+conda create --name <가상환경이름>
+conda activate <가상환경이름>
 ```
 
 ---
@@ -29,22 +30,16 @@ pip install -r requirements.txt
 
 ---
 
-### uvicorn 실행 (FastAPI 예시)
+### 실행 (FastAPI 예시)
 
 ```
-uvicorn app.main:app --reload
+python main.py
 ```
-
-- `app.main` → main.py 위치 기준 (모듈 경로)
-- `app` → FastAPI 인스턴스 변수명
-- `--reload` → 코드 변경 시 서버 자동 재시작
-
----
 
 ---
 
 참고) 추후 디렉토리 생성 시 모든 폴더에  
-`__init__.py` 넣어줘야함. **설사! 빈 파일이라도 상관없어요.**  
+`__init__.py` 넣어줘야함. **설사 빈 파일이라도 상관없어요.**  
 파이썬이 해당 디렉토리를 패키지로 인식해서 추후 import하기 위함임.
 
 ---
@@ -120,11 +115,11 @@ ex) `http://127.0.0.1:8000/api/v1/data_lab`
   - `my-page` → 마이페이지, 유저 개인 정보 관리
 
 - 각 도메인 폴더 안에는 **MVC 구조**로 파일이 배치됨
-  - **Model** → DB 모델 정의
-  - **route.py** → 라우터, 컨트롤러 (API 엔드포인트)
-  - **Service** → 비즈니스 로직 처리
-  - **schemas** → API 처리
-    **repository** -> db연결
+  - **model.py** → DB 모델 정의
+  - **routes.py** → 라우터, 컨트롤러 (API 엔드포인트)
+  - **services.py** → 비즈니스 로직 처리
+  - **schemas.py** → API 처리
+    **repository.py** -> db연결
 
 ---
 

@@ -16,9 +16,12 @@ class AccountService:
             accounts = self.repository.get_accounts_by_user_id(user_id)
             log_debug(f"found {len(accounts)} accounts")  # ✅ logging 사용
             
-            # 응답 형식에 맞게 데이터 변환
+            # 응답 형식에 맞게 데이터 변환 - account_id도 포함
             account_data = [
-                {"account_number": account.account_number}
+                {
+                    "account_id": account.id,
+                    "account_number": account.account_number
+                }
                 for account in accounts
             ]
             
@@ -48,6 +51,10 @@ class AccountService:
             log_debug("계좌번호 중복 체크 완료")  # ✅ logging 사용
             
             account = self.repository.create_account(account_data)
+            if not account:
+                log_error("계좌 생성 실패")
+                raise HTTPException(status_code=400, detail="계좌 생성에 실패했습니다.")
+            
             log_info(f"계좌 생성 완료 - ID: {account.id}, 계좌번호: {account.account_number}")  # ✅ logging 사용
             
             return {
@@ -65,4 +72,47 @@ class AccountService:
             log_error(f"TRACEBACK: {traceback.format_exc()}")  # ✅ logging 사용
             raise HTTPException(status_code=400, detail="오류가 발생했습니다.")
     
-   
+    def update_account(self, account_id: int, account_data: AccountUpdate) -> Dict[str, Any]:
+        """계좌 수정"""
+        try:
+            log_debug(f"계좌 수정 요청: ID={account_id}")
+            
+            account = self.repository.update_account(account_id, account_data)
+            if not account:
+                log_error(f"계좌 수정 실패: ID={account_id}")
+                raise HTTPException(status_code=404, detail="계좌를 찾을 수 없습니다.")
+            
+            log_info(f"계좌 수정 완료: ID={account.id}")
+            return {
+                "message": "계좌 수정 완료",
+                "data": {
+                    "id": account.id,
+                    "account_number": account.account_number
+                }
+            }
+        except HTTPException:
+            raise
+        except Exception as e:
+            log_error(f"update_account 실패: {e}")
+            raise HTTPException(status_code=400, detail="오류가 발생했습니다.")
+    
+    def delete_account(self, account_id: int) -> Dict[str, Any]:
+        """계좌 삭제"""
+        try:
+            log_debug(f"계좌 삭제 요청: ID={account_id}")
+            
+            success = self.repository.delete_account(account_id)
+            if not success:
+                log_error(f"계좌 삭제 실패: ID={account_id}")
+                raise HTTPException(status_code=404, detail="계좌를 찾을 수 없습니다.")
+            
+            log_info(f"계좌 삭제 완료: ID={account_id}")
+            return {
+                "message": "계좌 삭제 완료"
+            }
+        except HTTPException:
+            raise
+        except Exception as e:
+            log_error(f"delete_account 실패: {e}")
+            raise HTTPException(status_code=400, detail="오류가 발생했습니다.")
+

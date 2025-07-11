@@ -2,11 +2,14 @@ import logging
 from logging.handlers import RotatingFileHandler
 import os
 
-# 모든 services 함수들 import
-try:
-    print("✅ Services import 성공!")
-except ImportError as e:
-    print(f"❌ Services import 실패: {e}")
+# 불필요한 import 제거 (존재하지 않는 모듈들)
+# try:
+#     from src.auth.services import AuthService
+#     from src.data_lab.rank.services import get_stock_rank
+#     from src.trade_log.services import get_stock_rank as trade_get_stock_rank
+#     print("✅ Services import 성공!")
+# except ImportError as e:
+#     print(f"❌ Services import 실패: {e}")
 
 # logs 디렉토리가 존재하지 않으면 생성
 if not os.path.exists("logs"):
