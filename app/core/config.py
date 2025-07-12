@@ -1,11 +1,11 @@
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "SoL Project"
-    API_V1_STR: str = "/api/v1"
-    HOST: str = "127.0.0.1"
-    PORT: int = 8000
-    DEBUG: bool = True
+    PROJECT_NAME: str
+    API_V1_STR: str 
+    HOST: str 
+    PORT: int 
+    DEBUG: bool 
 
     DB_HOST: str
     DB_PORT: int
@@ -14,6 +14,11 @@ class Settings(BaseSettings):
     DB_NAME: str
 
     BACKEND_CORS_ORIGINS: list[str] = ["*"]
+
+    # JWT 설정
+    JWT_SECRET_KEY: str
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60*24
 
     class Config:
         env_file = ".env"
