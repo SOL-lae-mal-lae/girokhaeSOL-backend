@@ -1,8 +1,6 @@
-from fastapi import FastAPI
-from sqlalchemy.orm import Session
-from sqlalchemy import text
+from fastapi import FastAPI, Request, Response
 from app.core.config import settings
-from app.database.core import SessionLocal, engine, Base
+from app.database.core import engine, Base
 from app.src.account.routes import router as account_router
 # from app.src.financial_statements.routes import router as financial_statements_router  # 임시 주석
 from app.src.trade_log.routes import router as trade_log_router
