@@ -24,17 +24,3 @@ class AccountListResponse(BaseModel):
 class ErrorResponse(BaseModel):
     message: str = "오류가 발생했습니다."
 
-# User 스키마 추가
-class UserBase(BaseModel):
-    nickname: Optional[str] = None
-    age: Optional[int] = None
-    gender: Optional[str] = None  # 'male', 'female'
-
-class UserCreate(UserBase):
-    id: str  # VARCHAR(50)
-
-class UserResponse(UserBase):
-    id: str
-    
-    class Config:
-        from_attributes = True
