@@ -1,10 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Header
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
-from typing import Optional
 from app.database.core import SessionLocal
 from .services import TradeLogService
 from .schemas import TradeLogMonthlyResponse, ErrorResponse
-from app.logging import log_info
 
 router = APIRouter()
 
@@ -26,13 +24,13 @@ def get_db():
   }
 )
 def get_monthly_trade_logs_by_user_id(
-  userId: str,
   yearMonth: str,
+  request: Request,
   db: Session = Depends(get_db)
 ):
   """사용자의 매매일지 일자 조회"""
   try:
-    user_id = userId.strip()
+    user_id = request.state.user
     year_month = yearMonth.strip()
     service = TradeLogService(db)
     result = service.get_monthly_trade_logs_by_user_id(user_id, year_month)
