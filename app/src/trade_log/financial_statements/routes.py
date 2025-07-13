@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Path
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from .services import FinancialStatementService
 from .schemas import FinancialStatementResponse, ErrorResponse
@@ -8,7 +8,7 @@ from app.logging import log_info, log_error
 router = APIRouter()
 
 @router.get(
-    "/{stock_code}",
+    "/",
     response_model=FinancialStatementResponse,
     summary="종목코드로 재무제표 조회",
     description="종목코드로 해당 종목의 재무제표를 조회합니다",
@@ -20,7 +20,7 @@ router = APIRouter()
     }
 )
 async def get_statement_by_stock_code(
-    stock_code: str = Path(..., min_length=6, max_length=6, description="종목코드 (6자리, 예: 005930)"),
+    stock_code: str = Query(..., min_length=6, max_length=6, description="종목코드 (6자리, 예: 005930)"),
     db: Session = Depends(get_db)
 ):
     """종목코드로 재무제표를 조회합니다"""

@@ -1,0 +1,74 @@
+from fastapi import APIRouter, HTTPException, status, Header
+from typing import Optional
+from .services import HomeService
+from .schemas import HomeSummaryResponse, ErrorResponse
+from app.logging import log_info, log_error
+
+router = APIRouter()
+
+@router.get(
+    "/summary/{user_id}",
+    response_model=HomeSummaryResponse,
+    summary="사용자 홈 요약 정보 조회",
+    description="키움 API를 통해 사용자의 계좌 요약 정보를 조회합니다",
+    responses={
+        200: {"description": "계좌 요약 정보 조회 완료"},
+        400: {"model": ErrorResponse, "description": "잘못된 요청입니다"},
+        404: {"model": ErrorResponse, "description": "사용자를 찾을 수 없습니다"},
+        422: {"model": ErrorResponse, "description": "유효성 검증에 실패했습니다"},
+        500: {"model": ErrorResponse, "description": "서버 내부 오류"}
+    }
+)
+async def get_user_summary(
+    user_id: str,
+    authorization: Optional[str] = Header(None, description="Bearer 토큰")
+):
+    """사용자 홈 요약 정보를 조회합니다"""
+    log_info(f"사용자 홈 요약 정보 조회 요청: user_id={user_id}")
+    
+    # Authorization 헤더 검증 (선택사항)
+    if authorization and not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="올바르지 않은 Authorization 헤더 형식입니다"
+        )
+    
+    try:
+        service = HomeService()
+        result = service.get_user_summary(user_id)
+        
+        if "error" in result:
+            log_error(f"사용자 홈 요약 정보 조회 실패: {result['error']}")
+            
+            # 에러 타입에 따른 HTTP 상태 코드 설정
+            if "찾을 수 없음" in result["error"]:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="사용자를 찾을 수 없습니다."
+                )
+            elif "유효성" in result["error"]:
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail="유효성 검증에 실패했습니다."
+                )
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="잘못된 요청입니다."
+                )
+        
+        # 성공 응답에 메시지 추가
+        response_data = result["data"]
+        response_data["message"] = "계좌 요약 정보 조회 완료"
+        
+        log_info(f"사용자 홈 요약 정보 조회 성공: user_id={user_id}")
+        return response_data
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        log_error(f"사용자 홈 요약 정보 조회 중 예외 발생: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="서버 내부 오류가 발생했습니다"
+        )
