@@ -7,7 +7,11 @@ from app.src.account.routes import router as account_router
 from app.src.trade_log.financial_statements.routes import router as financial_statements_router
 >>>>>>> 645f7b6 (Resolve merge between develop and financial_statement)
 from app.src.trade_log.routes import router as trade_log_router
+<<<<<<< HEAD
 from app.src.trade_log.financial_statements.routes import router as financial_statements_router
+=======
+from app.src.Home.trade_summary.routes import router as home_router
+>>>>>>> 423f9f9 (trade_summary)
 from app.logging import log_info
 from app.src.auth.routes import router as auth_router
 from fastapi.responses import JSONResponse
@@ -65,11 +69,11 @@ app.add_middleware(JWTMiddleware)
 
 # 라우터 등록
 app.include_router(account_router, prefix="/api/v1/accounts", tags=["accounts"])
+app.include_router(financial_statements_router, prefix="/api/v1/financial-statements", tags=["financial-statements"])
+app.include_router(home_router, prefix="/api/v1/home", tags=["home"])
 app.include_router(trade_log_router, prefix="/api/v1/trade-logs", tags=["trade_logs"])
 app.include_router(auth_router,prefix="/api/v1/auth", tags=["auth"])
 app.include_router(stock_search_router, prefix="/api/v1/stock-search", tags=["stock_search"])
-
-app.include_router(financial_statements_router, prefix="/api/v1/financial-statements", tags=["financial_statements"])
 
 @app.get("/api/v1/")
 def read_root():
