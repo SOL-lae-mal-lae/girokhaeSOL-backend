@@ -2,8 +2,12 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from .model import Account
 from .schemas import AccountCreate, AccountUpdate
-from app.src.common_models.users import User
+from app.src.common_models.users.model import User
 from app.logging import log_debug, log_info, log_error
+
+
+
+
 class AccountRepository:
     def __init__(self, db: Session):
         self.db = db
@@ -19,44 +23,6 @@ class AccountRepository:
             log_error(f"사용자별 계좌 조회 중 오류: {e}")
             return []
 
-    def get_account_by_id(self, account_id: int) -> Optional[Account]:
-        """계좌 ID로 계좌 조회"""
-        try:
-            log_debug(f"계좌 ID 조회 시작: {account_id}")
-            account = self.db.query(Account).filter(Account.id == account_id).first()
-            if account:
-                log_debug(f"계좌 조회 성공: ID={account_id}")
-            else:
-                log_debug(f"계좌를 찾을 수 없음: ID={account_id}")
-            return account
-        except Exception as e:
-            log_error(f"계좌 ID 조회 중 오류: {e}")
-            return None
-    
-    def get_account_by_number(self, account_number: str) -> Optional[Account]:
-        """계좌번호로 계좌 조회"""
-        try:
-            log_debug(f"계좌번호 조회 시작: {account_number}")
-            account = self.db.query(Account).filter(Account.account_number == account_number).first()
-            if account:
-                log_debug(f"계좌 조회 성공: 계좌번호={account_number}")
-            else:
-                log_debug(f"계좌를 찾을 수 없음: 계좌번호={account_number}")
-            return account
-        except Exception as e:
-            log_error(f"계좌번호 조회 중 오류: {e}")
-            return None
-
-    def get_all_accounts(self, skip: int = 0, limit: int = 100) -> List[Account]:
-        """전체 계좌 목록 조회"""
-        try:
-            log_debug(f"전체 계좌 조회 시작: skip={skip}, limit={limit}")
-            accounts = self.db.query(Account).offset(skip).limit(limit).all()
-            log_debug(f"전체 계좌 조회 완료: {len(accounts)}개")
-            return accounts
-        except Exception as e:
-            log_error(f"전체 계좌 조회 중 오류: {e}")
-            return []
     
     def create_account(self, account_data: AccountCreate) -> Optional[Account]:
         """계좌 생성"""
@@ -127,13 +93,4 @@ class AccountRepository:
             self.db.rollback()
             return False
     
-    def get_count(self) -> int:
-        """전체 계좌 개수 조회"""
-        try:
-            count = self.db.query(Account).count()
-            log_debug(f"전체 계좌 개수: {count}")
-            return count
-        except Exception as e:
-            log_error(f"계좌 개수 조회 중 오류: {e}")
-            return 0
-
+  
