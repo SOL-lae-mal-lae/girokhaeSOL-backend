@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60*24
 
+    CLERK_SECRET_KEY: str
+    CLERK_KEY_URL: str
     class Config:
         env_file = ".env"
 
