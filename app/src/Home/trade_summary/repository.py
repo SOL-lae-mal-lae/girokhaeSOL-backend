@@ -3,7 +3,8 @@ from sqlalchemy import func, distinct
 from typing import List
 from app.logging import log_info, log_debug, log_error
 from app.src.trade_log.model import TradeLog, TradeDetail
-from app.src.account.model import User, Account
+from app.src.common_models.users.model import User
+from app.src.account.model import Account
 
 
 class TradedStockRepository:
