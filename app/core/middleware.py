@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from jose import jwt, JWTError
 from starlette.middleware.base import BaseHTTPMiddleware
 from app.core.config import settings
-from  app.core.clerk import sdk
+from app.core.clerk import sdk
 from app.logging import log_debug
 from clerk_backend_api.security.types import AuthenticateRequestOptions
 

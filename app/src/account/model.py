@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String
 from app.database.core import Base
+from app.src.common_models.users.model import User  # 기존 User 모델 import
 
 class Account(Base):
     __tablename__ = "accounts"
