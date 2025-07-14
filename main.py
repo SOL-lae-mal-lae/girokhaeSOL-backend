@@ -9,7 +9,7 @@ from app.src.auth.routes import router as auth_router
 from fastapi.responses import JSONResponse
 from app.core.middleware import JWTMiddleware
 import json
-
+from app.src.stock_search.routes import router as stock_search_router
 # 모든 모델 import (테이블 생성을 위해)
 from app.src.common_models.users import User
 from app.src.account.model import Account
@@ -60,6 +60,8 @@ app.include_router(account_router, prefix="/api/v1/accounts", tags=["accounts"])
 # app.include_router(financial_statements_router, prefix="/api/v1/financial-statements", tags=["financial-statements"])  # 임시 주석
 app.include_router(trade_log_router, prefix="/api/v1/trade-logs", tags=["trade_logs"])
 app.include_router(auth_router,prefix="/api/v1/auth", tags=["auth"])
+app.include_router(stock_search_router, prefix="/api/v1/stock-search", tags=["stock_search"])
+
 
 @app.get("/api/v1/")
 def read_root():
