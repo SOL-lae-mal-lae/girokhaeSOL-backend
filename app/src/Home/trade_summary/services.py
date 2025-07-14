@@ -16,34 +16,27 @@ class KiwoomAPIClient:
     def __init__(self):
         pass
 
-    def get_account_summary(self, user_id: str, token: str) -> Dict[str, Any]:
+    def get_account_summary(self, user_id: str, token: str, params: Dict[str, Any]) -> Dict[str, Any]:
         """계좌 요약 정보 조회 - 실제 API 호출"""
         try:
-            log_debug(f"🌐 계좌 요약 정보 조회: user_id={user_id}")
+            log_debug(f"🌐 계좌 요약 정보 조회: user_id={user_id}, params={params}")
 
             # 1. 요청할 API URL
             host = self.BASE_URL
             endpoint = '/api/dostk/acnt'
             url = host + endpoint
 
-            # 2. 요청 데이터 설정
-            data = {
-                'stk_cd': '005930',  # 예시 종목 코드
-                'strt_dt': '20241128',  # 시작 일자 (YYYYMMDD)
-                'end_dt': '20241128',  # 종료 일자 (YYYYMMDD)
-            }
-
-            # 3. 헤더 설정
+            # 2. 헤더 설정
             headers = {
                 'Content-Type': 'application/json;charset=UTF-8', 
                 'authorization': token,  # 접근토큰
                 'api-id': 'ka10073',  # TR명
             }
 
-            # 4. API 호출 (POST 요청)
-            response = requests.post(url, headers=headers, json=data)
+            # 3. API 호출 (GET 요청으로 변경, params 사용)
+            response = requests.get(url, headers=headers, params=params)
 
-            # 5. 응답 상태 코드 확인
+            # 4. 응답 상태 코드 확인
             if response.status_code == 200:
                 # 성공적으로 데이터 받았을 경우
                 log_info(f"✅ API 호출 성공: user_id={user_id}")
@@ -64,9 +57,9 @@ class HomeService:
         self.kiwoom_client = KiwoomAPIClient()
         log_debug("🏠 HomeService 초기화 완료")
     
-    def get_user_summary(self, user_id: str, token: str) -> Dict[str, Any]:
+    def get_user_summary(self, user_id: str, token: str, start_date: str = None, end_date: str = None) -> Dict[str, Any]:
         """사용자 홈 요약 정보 조회"""
-        log_info(f"🏠 사용자 홈 요약 정보 조회 시작: user_id={user_id}")
+        log_info(f"🏠 사용자 홈 요약 정보 조회 시작: user_id={user_id}, start_date={start_date}, end_date={end_date}")
         
         try:
             # 데이터베이스 세션 생성
@@ -80,8 +73,13 @@ class HomeService:
             
             log_debug(f"📊 DB 조회 결과 - 거래종목: {len(traded_stocks)}")
             
-            # 2. 키움 API에서 계좌 요약 정보 조회
-            api_result = self.kiwoom_client.get_account_summary(request.state.user, token)
+            # 2. 키움 API에서 계좌 요약 정보 조회 (사용자가 전달한 params 사용)
+            params = {
+                'user_id': user_id,
+                'start_date': start_date,
+                'end_date': end_date
+            }
+            api_result = self.kiwoom_client.get_account_summary(user_id, token, params)
             
             if "error" in api_result:
                 log_error(f"❌ 키움 API 조회 실패: {api_result['error']}")
@@ -100,13 +98,11 @@ class HomeService:
                 cumulative_profit_rate=api_data.get("profit_rate", 0.15)  # 손익률
             )
             
-            log_info(f"✅ 홈 요약 정보 조회 완료: user_id={user_id}")
-            
             return {
                 "data": summary_data.dict(),
                 "success": True
             }
-            
+        
         except Exception as e:
             log_error(f"❌ HomeService 오류: {e}")
             return {"error": f"홈 요약 정보 처리 중 오류가 발생했습니다: {str(e)}"}

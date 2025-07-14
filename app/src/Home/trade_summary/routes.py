@@ -18,18 +18,33 @@ router = APIRouter()
         500: {"model": ErrorResponse, "description": "서버 내부 오류"}
     }
 )
-async def get_user_summary(request: Request):
+async def get_user_summary(
+    stk_cd: str = "005930",
+    start_date: str = "20241128", 
+    end_date: str = "20241128",
+    request: Request = None
+):
     """사용자 홈 요약 정보를 조회합니다"""
+    user_id = request.state.user_id
+    print(user_id)
+
     
     try:
-        user_id = request.state.user
-        token = request.state.token
+        token = getattr(request.state, 'token', None) if request else None
         
-        log_info(f"사용자 홈 요약 정보 조회 요청: user_id={user_id}")
+        # 쿼리 파라미터를 딕셔너리로 구성
+        params = {
+            'stk_cd': stk_cd,
+            'start_date': start_date,
+            'end_date': end_date
+        }
+        
+        log_info(f"사용자 홈 요약 정보 조회 요청: user_id={user_id}, params={params}")
         
         service = HomeService()
 
-        result = service.get_user_summary(user_id=user_id, token=token)
+        result = service.get_user_summary(user_id=user_id, token=token, params=request.query_params)
+
         
         if "error" in result:
             log_error(f"사용자 홈 요약 정보 조회 실패: {result['error']}")
