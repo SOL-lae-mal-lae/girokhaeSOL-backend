@@ -48,9 +48,9 @@ class KiwoomOAuthMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next):
         if any(request.url.path.startswith(path) for path in KIWOOM_API_USE_PATH):
-            if not self.token or self.expires_dt < datetime.now().strftime('%Y%m%d%H%M%S'):
+            if not self.token or self.expires_dt < int(datetime.now().strftime('%Y%m%d%H%M%S')):
                 res = await get_oauth_token()
-                token, expires_dt = res
+                token, expires_dt = res.get('token'), res.get('expires_dt')
                 self.token = token
                 self.expires_dt = expires_dt
                 request.state.token = self.token
