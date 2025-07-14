@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Request
 from .schemas import HomeSummaryResponse, HomeSummaryData, ErrorResponse
 from .services import HomeService
 from app.logging import log_info, log_error
@@ -6,7 +6,7 @@ from app.logging import log_info, log_error
 router = APIRouter()
 
 @router.get(
-    "/summary/{user_id}",
+    "/summary",
     response_model=HomeSummaryResponse,
     summary="사용자 홈 요약 정보 조회",
     description="키움 API를 통해 사용자의 계좌 요약 정보를 조회합니다",
@@ -18,13 +18,18 @@ router = APIRouter()
         500: {"model": ErrorResponse, "description": "서버 내부 오류"}
     }
 )
-async def get_user_summary(user_id: str):
+async def get_user_summary(request: Request):
     """사용자 홈 요약 정보를 조회합니다"""
-    log_info(f"사용자 홈 요약 정보 조회 요청: user_id={user_id}")
     
     try:
+        user_id = request.state.user
+        token = request.state.token
+        
+        log_info(f"사용자 홈 요약 정보 조회 요청: user_id={user_id}")
+        
         service = HomeService()
-        result = service.get_user_summary(user_id)
+
+        result = service.get_user_summary(user_id=user_id, token=token)
         
         if "error" in result:
             log_error(f"사용자 홈 요약 정보 조회 실패: {result['error']}")

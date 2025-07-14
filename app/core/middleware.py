@@ -38,7 +38,8 @@ class JWTMiddleware(BaseHTTPMiddleware):
         return await call_next(request)
 
 KIWOOM_API_USE_PATH = [
-    "/api/v1/home/summary",
+    "/api/v1/home/summary"
+    "/api/v1/accounts",
 ]
 
 class KiwoomOAuthMiddleware(BaseHTTPMiddleware):
@@ -47,7 +48,7 @@ class KiwoomOAuthMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next):
         if any(request.url.path.startswith(path) for path in KIWOOM_API_USE_PATH):
-            if not self.token or self.expires_dt < int(datetime.now().strftime('%Y%m%d%H%M%S')):
+            if not self.token or self.expires_dt < datetime.now().strftime('%Y%m%d%H%M%S'):
                 res = await get_oauth_token()
                 token, expires_dt = res
                 self.token = token
