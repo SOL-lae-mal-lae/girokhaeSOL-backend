@@ -22,6 +22,11 @@ class Settings(BaseSettings):
 
     CLERK_SECRET_KEY: str
     CLERK_KEY_URL: str
+    # Kiwoom API 설정
+    KIWOOM_APP_KEY: str
+    KIWOOM_SECRET_KEY: str
+    KIWOOM_BASE_URL: str
+
     class Config:
         env_file = ".env"
 
