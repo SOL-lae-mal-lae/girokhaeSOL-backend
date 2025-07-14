@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Header
+from fastapi import APIRouter, Depends, HTTPException, Header, Request
 from sqlalchemy.orm import Session
 from typing import Optional
 from app.database.core import SessionLocal
@@ -15,13 +15,12 @@ def get_db():
     finally:
         db.close()
 
-# JWT 토큰에서 user_id 추출하는 의존성 (임시로 "user123"으로 고정)
+
 def get_current_user_id(authorization: Optional[str] = Header(None)) -> str:  # str로 변경
     # TODO: JWT 토큰 검증 로직 추가
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="인증이 필요합니다.")
     
-    # 임시로 user_id = "user123" 반환 (실제로는 JWT에서 추출)
     return "user123"
 
 @router.get(
@@ -35,13 +34,13 @@ def get_current_user_id(authorization: Optional[str] = Header(None)) -> str:  # 
     }
 )
 def get_accounts(
-    userId: str,  # query parameter로 변경 (camelCase)
+    request: Request,
     db: Session = Depends(get_db)
 ):
     """사용자의 계좌 목록 조회"""
     try:
-        # 공백 제거
-        user_id = userId.strip()
+        # request.state에서 user_id 가져오기
+        user_id = getattr(request.state, 'user', 'user123')  # 기본값 설정
         service = AccountService(db)
         return service.get_user_accounts(user_id)
     except HTTPException:
@@ -59,13 +58,14 @@ def get_accounts(
 )
 def create_account(
     account_data: AccountCreate,
-    userId: str,  # query parameter로 변경
+    request: Request,
     db: Session = Depends(get_db)
 ):
     """계좌 생성"""
     try:
-        # user_id를 query parameter에서 가져와서 설정
-        account_data.user_id = userId.strip()
+        # request.state에서 user_id 가져와서 설정
+        user_id = getattr(request.state, 'user', 'user123')  # 기본값 설정
+        account_data.user_id = user_id
         service = AccountService(db)
         return service.create_account(account_data)
     except HTTPException:
@@ -76,7 +76,8 @@ def create_account(
 @router.put("/")
 def update_account(
     account_data: AccountUpdate,
-    accountId: int,  # query parameter로 변경
+    accountId: int,  # query parameter로 유지
+    request: Request,
     db: Session = Depends(get_db)
 ):
     """계좌 업데이트"""
@@ -90,7 +91,8 @@ def update_account(
 
 @router.delete("/")
 def delete_account(
-    accountId: int,  # query parameter로 변경
+    accountId: int,  # query parameter로 유지
+    request: Request,
     db: Session = Depends(get_db)
 ):
     """계좌 삭제"""

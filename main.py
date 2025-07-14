@@ -11,6 +11,19 @@ from app.core.middleware import JWTMiddleware, KiwoomOAuthMiddleware
 import json
 from app.src.stock_search.routes import router as stock_search_router
 
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI
+
+app = FastAPI()
+
+# CORS 설정
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://localhost:8080"],  # 프론트엔드에서 요청을 허용할 주소
+    allow_credentials=True,
+    allow_methods=["*"],  # 모든 HTTP 메서드를 허용
+    allow_headers=["*"],  # 모든 헤더를 허용
+)
 # 테이블 생성
 Base.metadata.create_all(bind=engine)
 
