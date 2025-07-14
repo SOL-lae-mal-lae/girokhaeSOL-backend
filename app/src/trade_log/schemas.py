@@ -30,3 +30,29 @@ class TradeLogMonthlyResponse(BaseModel):
 
 class ErrorResponse(BaseModel):
     message: str = "오류가 발생했습니다."
+
+class Summaries(BaseModel):
+    total_buy_amount: int
+    total_sell_amount: int
+    total_cmsn_tax: float
+    settlement_amount: int
+    profit_rate: float
+
+class TradeDetails(BaseModel):
+    stock_name: str
+    stock_code: str
+    avg_buy_price: float
+    buy_quantity: int
+    avg_sell_price: float
+    sell_quantity: int
+    cmsn_alm_tax: float
+    profit_amount: int
+    profit_rate: float
+
+class TradeTransaction(BaseModel):
+    summaries: Summaries
+    trade_details: List[TradeDetails]
+
+class TradeLogTransactionResponse(BaseModel):
+    message: str
+    data: TradeTransaction

@@ -1,18 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
-from app.database.core import SessionLocal
+from app.database.core import get_db
 from .services import TradeLogService
-from .schemas import TradeLogMonthlyResponse, ErrorResponse
+from .schemas import TradeLogMonthlyResponse, ErrorResponse, TradeLogTransactionResponse
+from app.logging import log_info
 
 router = APIRouter()
-
-def get_db():
-  db = SessionLocal()
-  try:
-    yield db
-  finally:
-    db.close()
-
 
 @router.get("",
   response_model=TradeLogMonthlyResponse,
@@ -40,3 +33,23 @@ def get_monthly_trade_logs_by_user_id(
     raise
   except Exception:
     raise HTTPException(status_code=400, detail="오류가 발생했습니다.")
+
+@router.get("/transaction",
+  response_model= TradeLogTransactionResponse,
+  responses={
+    200: {"model": TradeLogMonthlyResponse, "description": "매매일지 일자 조회 성공"},
+    400: {"model": ErrorResponse, "description": "잘못된 요청"},
+  }
+)
+def get_transaction(date: str, request: Request):
+  log_info(date.strip())
+  try:
+    date = date.strip()
+    token = request.state.token
+
+    service = TradeLogService()
+    result = service.get_transaction_from_kiwoom(date, token)
+
+    return { "message": "success" ,"data": result }
+  except Exception:
+    raise HTTPException(status_code=400, detail="내역 조회에 실패하였습니다.")
