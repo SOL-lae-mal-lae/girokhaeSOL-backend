@@ -9,7 +9,7 @@ class AccountService:
     def __init__(self, db: Session):
         self.repository = AccountRepository(db)
     
-    def get_user_accounts(self, user_id: request.state.user) -> AccountListResponse:  # str로 변경
+    def get_user_accounts(self, user_id: str) -> AccountListResponse:  # str로 변경
         """사용자의 계좌 목록 조회"""
         try:
             log_debug(f"user_id = '{user_id}'")  # ✅ logging 사용
