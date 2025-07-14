@@ -17,7 +17,6 @@ EXCLUDE_PATHS = ["/docs",
                  "/api/v1/recent-post",
                  "/api/v1/community",
                  "/api/v1/financial-statements",
-                 "/api/v1/home/summary"
                  ]
 
 class JWTMiddleware(BaseHTTPMiddleware):
@@ -40,15 +39,16 @@ class JWTMiddleware(BaseHTTPMiddleware):
 KIWOOM_API_USE_PATH = [
     "/api/v1/home/summary"
     "/api/v1/accounts",
+    '/api/v1/trade-logs/transaction',
 ]
 
 class KiwoomOAuthMiddleware(BaseHTTPMiddleware):
-    expires_dt=0
+    expires_dt= ""
     token=''
 
     async def dispatch(self, request: Request, call_next):
         if any(request.url.path.startswith(path) for path in KIWOOM_API_USE_PATH):
-            if not self.token or self.expires_dt < int(datetime.now().strftime('%Y%m%d%H%M%S')):
+            if not self.token or datetime.strptime(self.expires_dt, '%Y%m%d%H%M%S') < datetime.now():
                 res = await get_oauth_token()
                 token, expires_dt = res.get('token'), res.get('expires_dt')
                 self.token = token
