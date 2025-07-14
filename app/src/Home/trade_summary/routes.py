@@ -1,7 +1,6 @@
-from fastapi import APIRouter, HTTPException, status, Header
-from typing import Optional
+from fastapi import APIRouter, HTTPException, status
+from .schemas import HomeSummaryResponse, HomeSummaryData, ErrorResponse
 from .services import HomeService
-from .schemas import HomeSummaryResponse, ErrorResponse
 from app.logging import log_info, log_error
 
 router = APIRouter()
@@ -19,19 +18,9 @@ router = APIRouter()
         500: {"model": ErrorResponse, "description": "서버 내부 오류"}
     }
 )
-async def get_user_summary(
-    user_id: str,
-    authorization: Optional[str] = Header(None, description="Bearer 토큰")
-):
+async def get_user_summary(user_id: str):
     """사용자 홈 요약 정보를 조회합니다"""
     log_info(f"사용자 홈 요약 정보 조회 요청: user_id={user_id}")
-    
-    # Authorization 헤더 검증 (선택사항)
-    if authorization and not authorization.startswith("Bearer "):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="올바르지 않은 Authorization 헤더 형식입니다"
-        )
     
     try:
         service = HomeService()
@@ -57,12 +46,25 @@ async def get_user_summary(
                     detail="잘못된 요청입니다."
                 )
         
-        # 성공 응답에 메시지 추가
-        response_data = result["data"]
-        response_data["message"] = "계좌 요약 정보 조회 완료"
+        # 성공 응답 구조 생성 - HomeSummaryResponse 모델에 맞게
+        # HomeSummaryResponse 모델 인스턴스 생성
+        summary_data = result["data"]
+        data_obj = HomeSummaryData(
+            Id=summary_data["Id"],
+            id=summary_data["id"],
+            journal_count_year=summary_data["journal_count_year"],
+            cumulative_investment_principal=summary_data["cumulative_investment_principal"],
+            cumulative_profit_loss=summary_data["cumulative_profit_loss"],
+            cumulative_profit_rate=summary_data["cumulative_profit_rate"]
+        )
+        
+        response = HomeSummaryResponse(
+            message="계좌 요약 정보 조회 완료",
+            data=data_obj
+        )
         
         log_info(f"사용자 홈 요약 정보 조회 성공: user_id={user_id}")
-        return response_data
+        return response
         
     except HTTPException:
         raise
@@ -72,3 +74,4 @@ async def get_user_summary(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="서버 내부 오류가 발생했습니다"
         )
+

@@ -16,7 +16,10 @@ EXCLUDE_PATHS = ["/docs",
                  "/api/v1/trade-logs/detail/gpt",
                  "/api/v1/trade-logs/statement/",
                  "/api/v1/recent-post",
-                 "/api/v1/community"]
+                 "/api/v1/community",
+                 "/api/v1/financial-statements",
+                 "/api/v1/home/summary"
+                 ]
 
 class JWTMiddleware(BaseHTTPMiddleware):
 

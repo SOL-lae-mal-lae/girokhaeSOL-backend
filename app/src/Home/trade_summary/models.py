@@ -1,5 +1,4 @@
 from pydantic import BaseModel, Field
-from typing import Optional
 
 
 # API 명세에 맞는 홈 요약 응답 모델 
