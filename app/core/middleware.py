@@ -1,11 +1,10 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
-from jose import jwt, JWTError
+from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from app.core.config import settings
-from app.core.clerk import sdk
-from app.logging import log_debug
+from  app.core.clerk import sdk
 from clerk_backend_api.security.types import AuthenticateRequestOptions
+from datetime import datetime
+from app.core.oauth_token import get_oauth_token
 
 EXCLUDE_PATHS = ["/docs",
                  "/openapi.json",
@@ -37,33 +36,24 @@ class JWTMiddleware(BaseHTTPMiddleware):
         
         request.state.user = request_state.payload.get('sub')
         return await call_next(request)
-# class JWTMiddleware(BaseHTTPMiddleware):
-#     async def dispatch(self, request: Request, call_next):
-#         # 인증 제외 경로라면 건너뛰기
-#         if any(request.url.path.startswith(path) for path in EXCLUDE_PATHS):
-#             return await call_next(request)
 
+KIWOOM_API_USE_PATH = [
 
-#         auth_header = request.headers.get("Authorization")
-#         if not auth_header or not auth_header.startswith("Bearer "):
-#             return JSONResponse(status_code=401, content={
-#                 "message": "토큰이 존재하지 않습니다.",
-#                 "data": None
-#             })
+];
 
-#         token = auth_header.split(" ")[1]
+class KiwoomOAuthMiddleware(BaseHTTPMiddleware):
+    expires_dt=0
+    token=''
 
-#         try:
-#             payload = jwt.decode(
-#                 token,
-#                 settings.JWT_SECRET_KEY,
-#                 algorithms=[settings.JWT_ALGORITHM]
-#             )
-#             request.state.user = payload["sub"]
-#         except JWTError:
-#             return JSONResponse(status_code=402, content={
-#                 "message": "유효하지 않은 토큰입니다.",
-#                 "data": None
-#             })
+    async def dispatch(self, request: Request, call_next):
+        if any(request.url.path.startswith(path) for path in KIWOOM_API_USE_PATH):
+            if not self.token or self.expires_dt > int(datetime.now().strftime('%Y%m%d%H%M%S')):
+                res = await get_oauth_token()
+                token, expires_dt = res
+                self.token = token
+                self.expires_dt = expires_dt
+                request.state.token = self.token
+            else:
+                request.state.token = self.token
 
-#         return await call_next(request)
+        return await call_next(request)
