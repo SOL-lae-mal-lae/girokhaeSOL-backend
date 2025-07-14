@@ -8,7 +8,7 @@ from app.src.Home.trade_summary.routes import router as home_router
 from app.logging import log_info
 from app.src.auth.routes import router as auth_router
 from fastapi.responses import JSONResponse
-from app.core.middleware import JWTMiddleware
+from app.core.middleware import JWTMiddleware, KiwoomOAuthMiddleware
 import json
 from app.src.stock_search.routes import router as stock_search_router
 
@@ -51,7 +51,7 @@ async def wrap_response(request: Request, call_next):
 
 # JWT 미들웨어 등록
 app.add_middleware(JWTMiddleware)
-
+app.add_middleware(KiwoomOAuthMiddleware)
 # 라우터 등록
 app.include_router(account_router, prefix="/api/v1/accounts", tags=["accounts"])
 app.include_router(financial_statements_router, prefix="/api/v1/financial-statements", tags=["financial-statements"])
