@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     KIWOOM_APP_KEY: str
     KIWOOM_SECRET_KEY: str
     KIWOOM_BASE_URL: str
+    
     class Config:
         env_file = ".env"
 

@@ -3,7 +3,7 @@ from .repository import TradedStockRepository
 from .models import HomeSummaryData
 from app.database.core import get_db
 from app.logging import log_debug, log_info, log_error
-from app.src.auth.services import KiwoomAuthService
+
 import requests
 import json
 
@@ -11,90 +11,50 @@ import json
 class KiwoomAPIClient:
     """키움 API 클라이언트 - 인증은 auth 서비스 사용"""
 
-    BASE_URL = "https://api.mockiwoom.com"  # 실전투자용
+    BASE_URL = "https://mockapi.kiwoom.com"  # 실전투자용 URL
 
     def __init__(self):
         pass
 
-    def get_account_summary(self, user_id: str) -> Dict[str, Any]:
-        """계좌 요약 정보 조회 - 목 데이터 반환"""
+    def get_account_summary(self, user_id: str, token: str) -> Dict[str, Any]:
+        """계좌 요약 정보 조회 - 실제 API 호출"""
         try:
             log_debug(f"🌐 계좌 요약 정보 조회: user_id={user_id}")
 
-            # 목 데이터 반환 (실제 API 호출 대신)
-            log_info(f"🔧 목 데이터 사용 - 실제 키움 API 호출 없음")
-            
-            mock_data = {
-                "data": {
-                    "user_id": user_id,
-                    "internal_id": 1,
-                    "total_principal": 12000000,
-                    "total_profit_loss": 1800000,
-                    "profit_rate": 0.15,
-                    "journal_count": 55
-                }
+            # 1. 요청할 API URL
+            host = self.BASE_URL
+            endpoint = '/api/dostk/acnt'
+            url = host + endpoint
+
+            # 2. 요청 데이터 설정
+            data = {
+                'stk_cd': '005930',  # 예시 종목 코드
+                'strt_dt': '20241128',  # 시작 일자 (YYYYMMDD)
+                'end_dt': '20241128',  # 종료 일자 (YYYYMMDD)
             }
-            
-            log_info(f"✅ 목 데이터 반환 완료: user_id={user_id}")
-            return mock_data
+
+            # 3. 헤더 설정
+            headers = {
+                'Content-Type': 'application/json;charset=UTF-8', 
+                'authorization': token,  # 접근토큰
+                'api-id': 'ka10073',  # TR명
+            }
+
+            # 4. API 호출 (POST 요청)
+            response = requests.post(url, headers=headers, json=data)
+
+            # 5. 응답 상태 코드 확인
+            if response.status_code == 200:
+                # 성공적으로 데이터 받았을 경우
+                log_info(f"✅ API 호출 성공: user_id={user_id}")
+                return response.json()  # API 응답 데이터 반환
+            else:
+                log_error(f"❌ API 호출 실패: {response.status_code}")
+                return {"error": "API 호출 실패"}
 
         except Exception as e:
             log_error(f"❌ 예상치 못한 오류: {e}")
             return {"error": "계좌 요약 정보 조회 중 오류가 발생했습니다"}
-
-    def get_realized_profit(
-        self,
-        user_id: str,
-        data: Dict[str, Any],
-        cont_yn: str = 'N',
-        next_key: str = ''
-    ) -> Dict[str, Any]:
-        """
-        일자별 종목별 실현손익 요청 (ka10073)
-        """
-        try:
-            log_debug(f"🌐 실현손익 조회 요청 - data: {data}")
-
-            token = KiwoomAuthService.get_token()
-            if not token:
-                log_error("❌ 키움 API 토큰 없음")
-                return {"error": "키움 API 인증에 실패했습니다"}
-
-            endpoint = '/api/dostk/acnt'
-            url = self.BASE_URL + endpoint
-
-            headers = {
-                'Content-Type': 'application/json;charset=UTF-8',
-                'authorization': f'Bearer {token}',
-                'cont-yn': cont_yn,
-                'next-key': next_key,
-                'api-id': 'ka10073',
-            }
-
-            payload = {
-                **data
-            }
-
-            log_debug(f"Request URL: {url}")
-            log_debug(f"Request Headers: {headers}")
-            log_debug(f"Request Payload: {payload}")
-
-            response = requests.post(url, headers=headers, json=payload, timeout=30)
-
-            log_debug(f"Response Status Code: {response.status_code}")
-            log_debug(f"Response Body: {response.text}")
-
-            if response.status_code == 200:
-                return response.json()
-            else:
-                return {"error": f"API 호출 실패: {response.status_code}"}
-
-        except requests.exceptions.RequestException as e:
-            log_error(f"❌ 네트워크 오류: {e}")
-            return {"error": "네트워크 연결 오류가 발생했습니다"}
-        except Exception as e:
-            log_error(f"❌ 예상치 못한 오류: {e}")
-            return {"error": "실현손익 정보 조회 중 오류가 발생했습니다"}
 
 
 class HomeService:
@@ -104,7 +64,7 @@ class HomeService:
         self.kiwoom_client = KiwoomAPIClient()
         log_debug("🏠 HomeService 초기화 완료")
     
-    def get_user_summary(self, user_id: str) -> Dict[str, Any]:
+    def get_user_summary(self, user_id: str, token: str) -> Dict[str, Any]:
         """사용자 홈 요약 정보 조회"""
         log_info(f"🏠 사용자 홈 요약 정보 조회 시작: user_id={user_id}")
         
@@ -121,7 +81,7 @@ class HomeService:
             log_debug(f"📊 DB 조회 결과 - 거래종목: {len(traded_stocks)}")
             
             # 2. 키움 API에서 계좌 요약 정보 조회
-            api_result = self.kiwoom_client.get_account_summary(user_id)
+            api_result = self.kiwoom_client.get_account_summary(request.state.user, token)
             
             if "error" in api_result:
                 log_error(f"❌ 키움 API 조회 실패: {api_result['error']}")
