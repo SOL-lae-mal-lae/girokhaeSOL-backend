@@ -27,9 +27,9 @@ def login_and_issue_token(user_id: str, db: Session) -> str:
 class KiwoomAuthService:
     """키움 API 인증 서비스 - 전역 토큰 관리"""
     
-    BASE_URL = "https://mockapi.kiwoom.com"
-    APP_KEY = "ck2aFnUqE5w2if5WX2gYNXUlw9mMsw4OQHUMy4mSYuw"
-    SECRET_KEY = "B781rDYU855V4uy7ljdF-q-3zhA4j47W-sBwMl85_jQ"
+    BASE_URL = settings.KIWOOM_BASE_URL
+    APP_KEY = settings.KIWOOM_APP_KEY
+    SECRET_KEY = settings.KIWOOM_SECRET_KEY
     
     _token: Optional[str] = None  # 클래스 변수로 토큰 저장 (싱글톤)
     
