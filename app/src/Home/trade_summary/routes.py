@@ -19,9 +19,9 @@ router = APIRouter()
     }
 )
 async def get_user_summary(
-    start_date: str = "20250705", 
-    end_date: str = "20250715",
-    request: Request = None
+    start_date: str , 
+    end_date: str ,
+    request: Request 
 ):
     """사용자 홈 요약 정보를 조회합니다"""
     
