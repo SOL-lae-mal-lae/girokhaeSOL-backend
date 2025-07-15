@@ -8,7 +8,7 @@ from app.logging import log_info, log_error
 router = APIRouter()
 
 @router.get(
-    "/",
+    "",
     response_model=FinancialStatementResponse,
     summary="종목코드로 재무제표 조회",
     description="종목코드로 해당 종목의 재무제표를 조회합니다",

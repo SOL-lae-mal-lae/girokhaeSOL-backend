@@ -10,6 +10,11 @@ from fastapi.responses import JSONResponse
 from app.core.middleware import JWTMiddleware, KiwoomOAuthMiddleware
 import json
 from app.src.stock_search.routes import router as stock_search_router
+from app.src.chart.routes import router as chart_router
+# 모든 모델 import (테이블 생성을 위해)
+from app.src.common_models.users import User
+from app.src.account.model import Account
+# from app.src.financial_statements.model import FinancialStatement  # 임시 주석
 
 # 테이블 생성
 Base.metadata.create_all(bind=engine)
@@ -59,6 +64,8 @@ app.include_router(financial_statements_router, prefix="/api/v1/financial-statem
 app.include_router(home_router, prefix="/api/v1/home", tags=["home"])
 app.include_router(trade_log_router, prefix="/api/v1/trade-logs", tags=["trade_logs"])
 app.include_router(stock_search_router, prefix="/api/v1/stock-search", tags=["stock_search"])
+app.include_router(stock_search_router, prefix="/api/v1/trade-logs", tags=["trade_logs"])
+app.include_router(chart_router, prefix="/api/v1/trade-logs", tags=["trade_logs"])
 
 @app.get("/api/v1/")
 def read_root():
