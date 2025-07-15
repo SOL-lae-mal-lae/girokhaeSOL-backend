@@ -15,7 +15,6 @@ def get_db():
     finally:
         db.close()
 
-
 def get_current_user_id(authorization: Optional[str] = Header(None)) -> str:  # str로 변경
     # TODO: JWT 토큰 검증 로직 추가
     if not authorization or not authorization.startswith("Bearer "):
