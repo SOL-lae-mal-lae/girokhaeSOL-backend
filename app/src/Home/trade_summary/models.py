@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 # API 명세에 맞는 홈 요약 응답 모델 
 class HomeSummaryData(BaseModel):
     """홈 요약 정보 데이터 모델"""
-    Id: str = Field(..., description="사용자 고유 ID")
+   
     id: int = Field(..., description="내부 ID")
     journal_count_year: int = Field(..., description="최근 1년간 매매일지 작성 개수")
     cumulative_investment_principal: int = Field(..., description="누적 투자 원금")

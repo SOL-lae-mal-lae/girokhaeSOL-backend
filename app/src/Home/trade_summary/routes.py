@@ -18,18 +18,27 @@ router = APIRouter()
         500: {"model": ErrorResponse, "description": "서버 내부 오류"}
     }
 )
-async def get_user_summary(request: Request):
+async def get_user_summary(
+    start_date: str , 
+    end_date: str ,
+    request: Request 
+):
     """사용자 홈 요약 정보를 조회합니다"""
     
     try:
-        user_id = request.state.user
-        token = request.state.token
+        token = getattr(request.state, 'token', None) if request else None
         
-        log_info(f"사용자 홈 요약 정보 조회 요청: user_id={user_id}")
+        # 쿼리 파라미터를 딕셔너리로 구성
+        params = {
+            'start_date': start_date,
+            'end_date': end_date
+        }
+        
+        log_info(f"사용자 홈 요약 정보 조회 요청: params={params}")
         
         service = HomeService()
+        result = service.get_user_summary(token=token, params=params)
 
-        result = service.get_user_summary(user_id=user_id, token=token)
         
         if "error" in result:
             log_error(f"사용자 홈 요약 정보 조회 실패: {result['error']}")
@@ -55,7 +64,7 @@ async def get_user_summary(request: Request):
         # HomeSummaryResponse 모델 인스턴스 생성
         summary_data = result["data"]
         data_obj = HomeSummaryData(
-            Id=summary_data["Id"],
+           
             id=summary_data["id"],
             journal_count_year=summary_data["journal_count_year"],
             cumulative_investment_principal=summary_data["cumulative_investment_principal"],
@@ -67,8 +76,6 @@ async def get_user_summary(request: Request):
             message="계좌 요약 정보 조회 완료",
             data=data_obj
         )
-        
-        log_info(f"사용자 홈 요약 정보 조회 성공: user_id={user_id}")
         return response
         
     except HTTPException:
