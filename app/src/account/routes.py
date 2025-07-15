@@ -25,7 +25,7 @@ def get_current_user_id(authorization: Optional[str] = Header(None)) -> str:  # 
     return "user123"
 
 @router.get(
-    "/", 
+    "", 
     response_model=AccountListResponse,
     responses={
         200: {"model": AccountListResponse, "description": "계좌 목록 조회 성공"},
@@ -50,7 +50,7 @@ def get_accounts(
         raise HTTPException(status_code=400, detail="오류가 발생했습니다.")
 
 @router.post(
-    "/",
+    "",
     responses={
         200: {"description": "계좌 생성 성공"},
         400: {"description": "계좌번호 중복 또는 일반 오류"},
@@ -73,7 +73,7 @@ def create_account(
     except Exception:
         raise HTTPException(status_code=400, detail="오류가 발생했습니다.")
 
-@router.put("/")
+@router.put("")
 def update_account(
     account_data: AccountUpdate,
     accountId: int,  # query parameter로 변경
@@ -88,7 +88,7 @@ def update_account(
     except Exception:
         raise HTTPException(status_code=400, detail="오류가 발생했습니다.")
 
-@router.delete("/")
+@router.delete("")
 def delete_account(
     accountId: int,  # query parameter로 변경
     db: Session = Depends(get_db)
