@@ -17,6 +17,7 @@ EXCLUDE_PATHS = ["/docs",
                  "/api/v1/recent-post",
                  "/api/v1/community",
                  "/api/v1/financial-statements",
+                 "/api/v1/home/summary",
                  ]
 
 class JWTMiddleware(BaseHTTPMiddleware):
@@ -37,7 +38,7 @@ class JWTMiddleware(BaseHTTPMiddleware):
         return await call_next(request)
 
 KIWOOM_API_USE_PATH = [
-    "/api/v1/home/summary",  # 쉼표 추가
+    "/api/v1/home/summary",  
     "/api/v1/accounts",
     "/api/v1/trade-logs/chart",
     '/api/v1/trade-logs/transaction',
