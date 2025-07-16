@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session
-from typing import List, Dict, Any
 from .repository import AccountRepository
-from .schemas import AccountCreate, AccountGetResponse, AccountCreateResponse, ErrorResponse
+from .schemas import AccountCreate, AccountGetResponse, AccountCreateResponse
 from fastapi import HTTPException
 from app.logging import log_debug, log_info, log_error  # logging.py 사용
 
@@ -27,7 +26,7 @@ class AccountService:
             
             log_debug(f"account_data = {account_data}")  # ✅ logging 사용
             
-            return AccountListResponse(
+            return AccountGetResponse(
                 message="계좌 목록 불러오기 완료",
                 data=account_data
             )
