@@ -2,12 +2,12 @@ from sqlalchemy.orm import Session
 from typing import Any
 from fastapi import HTTPException
 from app.logging import log_debug, log_info, log_error
-from app.src.trade_log.model import TradeDetail, Sentiment
-from app.src.trade_log.schemas import TradeLogTransactionResponse
+from app.src.trade_log.month_trade_log.model import TradeDetail, Sentiment
+from app.src.trade_log.month_trade_log.schemas import TradeLogTransactionResponse
 from .repository import TradeLogRepository
 import requests
 
-from ...core.config import settings
+from app.core.config import settings
 
 
 class TradeLogService:
