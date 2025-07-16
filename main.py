@@ -11,7 +11,7 @@ from app.core.middleware import JWTMiddleware, KiwoomOAuthMiddleware
 import json
 from app.src.stock_search.routes import router as stock_search_router
 from app.src.trade_log.chart.routes import router as chart_router
-from app.src.trade_log.detail.routes import router as trade_log_post_router
+from app.src.trade_log.routes import router as trade_log_post_router
 
 # 모든 모델 import (테이블 생성을 위해)
 from app.src.common_models.users.model import User

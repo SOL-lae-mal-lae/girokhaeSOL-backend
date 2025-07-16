@@ -6,7 +6,7 @@ from .services import create_trade_log_service
 
 router = APIRouter()
 
-@router.post("/detail", status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED)
 def create_trade_log_api(
     body: TradeLogCreateSchema,
     request: Request,
