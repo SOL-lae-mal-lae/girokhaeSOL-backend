@@ -17,6 +17,6 @@ def create_trade_log_api(
         raise HTTPException(status_code=401, detail="인증 필요")
     result = create_trade_log_service(user_id, body, db)
     return {
-        "message": "매매일지 생성 완료",
-        "data": result
+        "message": "success",
+        "data": None,
     }
