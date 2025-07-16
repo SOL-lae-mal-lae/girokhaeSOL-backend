@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, Response
 from app.core.config import settings
 from app.database.core import engine, Base
 from app.src.account.routes import router as account_router
-from app.src.trade_log.routes import router as trade_log_router
+from app.src.trade_log.month_trade_log.routes import router as trade_log_router
 from app.src.trade_log.financial_statements.routes import router as financial_statements_router
 from app.src.Home.trade_summary.routes import router as home_router
 from app.logging import log_info
@@ -10,9 +10,11 @@ from fastapi.responses import JSONResponse
 from app.core.middleware import JWTMiddleware, KiwoomOAuthMiddleware
 import json
 from app.src.stock_search.routes import router as stock_search_router
-from app.src.chart.routes import router as chart_router
+from app.src.trade_log.chart.routes import router as chart_router
+from app.src.trade_log.detail.routes import router as trade_log_post_router
+
 # 모든 모델 import (테이블 생성을 위해)
-from app.src.common_models.users import User
+from app.src.common_models.users.model import User
 from app.src.account.model import Account
 # from app.src.financial_statements.model import FinancialStatement  # 임시 주석
 
@@ -79,6 +81,7 @@ app.include_router(trade_log_router, prefix="/api/v1/trade-logs", tags=["trade_l
 app.include_router(stock_search_router, prefix="/api/v1/stock-search", tags=["stock_search"])
 app.include_router(stock_search_router, prefix="/api/v1/trade-logs", tags=["trade_logs"])
 app.include_router(chart_router, prefix="/api/v1/trade-logs", tags=["trade_logs"])
+app.include_router(trade_log_post_router, prefix="/api/v1/trade-logs", tags=["trade_logs"])
 
 @app.get("/api/v1/")
 def read_root():

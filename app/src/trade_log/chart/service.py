@@ -1,5 +1,4 @@
 import requests
-import json
 from typing import List
 from .schemas import ChartData, ChartRequest
 import pandas as pd
