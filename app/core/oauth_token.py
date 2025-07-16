@@ -1,22 +1,32 @@
 from app.logging import log_error, log_info
 from app.core.config import settings
+from app.database.core import get_db
+from app.src.account.repository import AccountRepository
 import requests
 
-async def get_oauth_token():
+async def get_oauth_token(user_id: str):
+    """사용자별 OAuth 토큰 발급"""
     headers = {
         'Content-Type': 'application/json;charset=UTF-8',
     }
     try:
+        # DB에서 사용자의 API 키 조회
+        db = next(get_db())
+        account_repo = AccountRepository(db)
+        api_keys = account_repo.get_api_keys_by_user_id(user_id)
+        
+        if not api_keys:
+            log_error(f'사용자의 API 키를 찾을 수 없음: user_id={user_id}')
+            return None
+        
         url = f'{settings.KIWOOM_BASE_URL}/oauth2/token'
         data = {
             'grant_type': 'client_credentials',
-            'appkey': settings.KIWOOM_APP_KEY,
-            'secretkey': settings.KIWOOM_SECRET_KEY,
+            'appkey': api_keys['app_key'],
+            'secretkey': api_keys['secret_key'],
         }
         
-        log_info(f'OAuth 요청 URL: {url}')
-        log_info(f'OAuth 요청 데이터: {data}')
-        log_info(f'OAuth 요청 헤더: {headers}')
+ 
         
         response = requests.post(url=url, headers=headers, json=data)
         
@@ -44,3 +54,6 @@ async def get_oauth_token():
     except Exception as e:
         log_error(f'oauth token 발급 오류 : {str(e)}')
         return None
+    finally:
+        if 'db' in locals():
+            db.close()

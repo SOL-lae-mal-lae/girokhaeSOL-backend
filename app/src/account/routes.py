@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Header, Request
 from sqlalchemy.orm import Session
-from typing import Optional
 from app.database.core import SessionLocal
 from .services import AccountService
-from .schemas import AccountCreate, AccountUpdate, AccountListResponse, ErrorResponse
+from .schemas import AccountCreate, AccountGetResponse, AccountCreateResponse, ErrorResponse
 
 router = APIRouter()
 
@@ -15,18 +14,13 @@ def get_db():
     finally:
         db.close()
 
-def get_current_user_id(authorization: Optional[str] = Header(None)) -> str:  # str로 변경
-    # TODO: JWT 토큰 검증 로직 추가
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="인증이 필요합니다.")
-    
-    return "user123"
+
 
 @router.get(
     "", 
-    response_model=AccountListResponse,
+    response_model=AccountGetResponse,
     responses={
-        200: {"model": AccountListResponse, "description": "계좌 목록 조회 성공"},
+        200: {"model": AccountGetResponse, "description": "계좌 목록 조회 성공"},
         400: {"model": ErrorResponse, "description": "잘못된 요청"},
         404: {"description": "사용자를 찾을 수 없음"},
         422: {"description": "유효성 검증 실패"}
@@ -39,7 +33,7 @@ def get_accounts(
     """사용자의 계좌 목록 조회"""
     try:
         # request.state에서 user_id 가져오기
-        user_id = getattr(request.state, 'user', 'user123')  # 기본값 설정
+        user_id = request.state.user
         service = AccountService(db)
         return service.get_user_accounts(user_id)
     except HTTPException:
@@ -49,12 +43,16 @@ def get_accounts(
 
 @router.post(
     "",
+    response_model=AccountCreateResponse,
     responses={
-        200: {"description": "계좌 생성 성공"},
-        400: {"description": "계좌번호 중복 또는 일반 오류"},
+        200: {"model": AccountCreateResponse, "description": "계좌 생성 완료"},
+        400: {"model": ErrorResponse, "description": "이미 존재하는 계좌번호입니다."},
+        401: {"model": ErrorResponse, "description": "인증이 필요합니다."},
         422: {"description": "유효성 검증 실패"}
     }
 )
+
+
 def create_account(
     account_data: AccountCreate,
     request: Request,
@@ -62,43 +60,16 @@ def create_account(
 ):
     """계좌 생성"""
     try:
-        # request.state에서 user_id 가져와서 설정
-        user_id = getattr(request.state, 'user', 'user123')  # 기본값 설정
-        account_data.user_id = user_id
+        # request.state에서 user_id 가져오기
+        user_id = request.state.user
+        
+        if not user_id:
+            raise HTTPException(status_code=401, detail="인증이 필요합니다.")
+        
         service = AccountService(db)
-        return service.create_account(account_data)
+        return service.create_account(user_id, account_data)
     except HTTPException:
         raise
-    except Exception:
+    except Exception as e:
         raise HTTPException(status_code=400, detail="오류가 발생했습니다.")
 
-@router.put("")
-def update_account(
-    account_data: AccountUpdate,
-    accountId: int,  # query parameter로 유지
-    request: Request,
-    db: Session = Depends(get_db)
-):
-    """계좌 업데이트"""
-    try:
-        service = AccountService(db)
-        return service.update_account(accountId, account_data)
-    except HTTPException:
-        raise
-    except Exception:
-        raise HTTPException(status_code=400, detail="오류가 발생했습니다.")
-
-@router.delete("")
-def delete_account(
-    accountId: int,  # query parameter로 유지
-    request: Request,
-    db: Session = Depends(get_db)
-):
-    """계좌 삭제"""
-    try:
-        service = AccountService(db)
-        return service.delete_account(accountId)
-    except HTTPException:
-        raise
-    except Exception:
-        raise HTTPException(status_code=400, detail="오류가 발생했습니다.")
