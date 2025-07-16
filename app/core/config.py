@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings
+from typing import List
 
 class Settings(BaseSettings):
     PROJECT_NAME: str
@@ -13,7 +14,7 @@ class Settings(BaseSettings):
     DB_PASSWORD: str
     DB_NAME: str
 
-    BACKEND_CORS_ORIGINS: list[str] = ["*"]
+    BACKEND_CORS_ORIGINS: List[str] = ["*"]
 
     # JWT 설정
     JWT_SECRET_KEY: str
@@ -23,8 +24,6 @@ class Settings(BaseSettings):
     CLERK_SECRET_KEY: str
     CLERK_KEY_URL: str
 
-    KIWOOM_APP_KEY: str
-    KIWOOM_SECRET_KEY: str
     KIWOOM_BASE_URL: str
     
     class Config:

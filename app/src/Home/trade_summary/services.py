@@ -40,16 +40,7 @@ class KiwoomAPIClient:
                 return response.json()  # API 응답 데이터 반환
             else:
                 log_error(f"❌ API 호출 실패: {response.status_code}, Response: {response.text}")
-                # Mock 데이터 반환 (개발용)
-                return {
-                    "data": {
-                        "internal_id": 1,
-                        "journal_count": 55,
-                        "total_principal": 12000000,
-                        "total_profit_loss": 1800000,
-                        "profit_rate": 0.15
-                    }
-                }
+           
 
         except Exception as e:
             log_error(f"❌ 예상치 못한 오류: {e}")

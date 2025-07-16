@@ -19,7 +19,6 @@ from app.src.account.model import Account
 # from app.src.financial_statements.model import FinancialStatement  # 임시 주석
 
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI
 
 app = FastAPI()
 
@@ -43,31 +42,6 @@ app = FastAPI(
 # 리턴 시 예외처리 하고픈 부분이 있다면 아래에 넣어주세요~
 EXCLUDE_PATH_PREFIXES = []
 
-
-# response 미들웨어 등록
-# @app.middleware("http")
-# async def wrap_response(request: Request, call_next):
-#     response: Response = await call_next(request)
-#
-#     if response.media_type != 'application/json' or request.url.path in EXCLUDE_PATH_PREFIXES:
-#         return response
-#     log_info(response)
-#     # 이미 JSONResponse라면 body 꺼내오기
-#     if isinstance(response, JSONResponse):
-#         log_info(response)
-#         content = response.body
-#         # body가 bytes 이므로 decode 필요
-#         content_json = json.loads(content.decode())
-#     else:
-#         content_json = None
-#
-#
-#     wrapped = {
-#         "message": "Success",  # 필요하다면 커스텀 로직으로 message 채우기
-#         "data": content_json
-#     }
-#
-#     return JSONResponse(content=wrapped)
 
 
 # JWT 미들웨어 등록
