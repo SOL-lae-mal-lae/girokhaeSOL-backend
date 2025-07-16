@@ -39,7 +39,7 @@ def create_trade_log_service(user_id: str, body, db: Session):
         trade_details=[TradeDetailSchema(**d.__dict__) for d in details],
         charts=[ChartSchema(**c.__dict__) for c in charts],
         investment_type=trade_log.investment_type,
-        sentiments=sentiment_names
+        sentiments=sentiment_names,
         rationale=trade_log.rationale,
         evaluation=trade_log.evaluation,
         news_links=[NewsLinkSchema(**n.__dict__) for n in news_links],
