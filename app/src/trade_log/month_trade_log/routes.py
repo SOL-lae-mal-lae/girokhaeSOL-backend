@@ -17,14 +17,14 @@ router = APIRouter()
   }
 )
 def get_monthly_trade_logs_by_user_id(
-  yearMonth: str,
+  year_month: str,
   request: Request,
   db: Session = Depends(get_db)
 ):
   """사용자의 매매일지 일자 조회"""
   try:
     user_id = request.state.user
-    year_month = yearMonth.strip()
+    year_month = year_month.strip()
     service = TradeLogService(db)
     result = service.get_monthly_trade_logs_by_user_id(user_id, year_month)
 
