@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, status, Request
 from .schemas import HomeSummaryResponse, HomeSummaryData, ErrorResponse
 from .services import HomeService
 from app.logging import log_info, log_error
+from app.core.oauth_token import get_oauth_token  # OAuth 토큰 함수 import
 
 router = APIRouter()
 
@@ -26,7 +27,7 @@ async def get_user_summary(
     """사용자 홈 요약 정보를 조회합니다"""
     
     try:
-        token = getattr(request.state, 'token', None) if request else None
+        token =request.state.token if request else None
         
         # 쿼리 파라미터를 딕셔너리로 구성
         params = {
