@@ -101,30 +101,65 @@ class TradeLogService:
             response = requests.post(url=f'{settings.KIWOOM_BASE_URL}/api/dostk/acnt', headers=headers, json=data)
             res = response.json()
 
-            trade_details = [
-                {
-                    "stock_name": item['stk_nm'],
-                    "stock_code": item['stk_cd'],
-                    "avg_buy_price": item['buy_avg_pric'],
-                    "buy_quantity": item['buy_qty'],
-                    "avg_sell_price": item['sel_avg_pric'],
-                    "sell_quantity": item['sell_qty'],
-                    "cmsn_alm_tax": item['cmsn_alm_tax'],
-                    "profit_amount": item['pl_amt'],
-                    "profit_rate": item['prft_rt']
-                }
-                for item in res['tdy_trde_diary']
-            ]
+            # 빈 문자열을 적절한 기본값으로 변환하는 헬퍼 함수
+            def safe_float(value, default=0.0):
+                if value == '' or value is None:
+                    return default
+                try:
+                    return float(value)
+                except (ValueError, TypeError):
+                    return default
+            
+            def safe_int(value, default=0):
+                if value == '' or value is None:
+                    return default
+                try:
+                    return int(value)
+                except (ValueError, TypeError):
+                    return default
+            
+            trade_details = []
+            
+            # tdy_trde_diary가 존재하고 비어있지 않을 때만 처리
+            if 'tdy_trde_diary' in res and res['tdy_trde_diary'] and len(res['tdy_trde_diary']) > 0:
+                log_debug(f"거래 내역 처리 시작: {len(res['tdy_trde_diary'])}개 항목")
+                for item in res['tdy_trde_diary']:
+                    # 모든 값이 '0'이거나 빈 값인지 확인하는 함수
+                    def is_empty_trade(item):
+                        # 주식명이나 주식코드가 있으면 실제 거래로 간주
+                        if item.get('stk_nm') and item.get('stk_nm') != '0' and item.get('stk_nm') != '':
+                            return False
+                        if item.get('stk_cd') and item.get('stk_cd') != '0' and item.get('stk_cd') != '':
+                            return False
+                        return True
+                    
+                    # 빈 거래 내역이면 건너뛰기
+                    if is_empty_trade(item):
+                        continue
+                    
+                    trade_details.append({
+                        "stock_name": item.get('stk_nm', ''),
+                        "stock_code": item.get('stk_cd', ''),
+                        "avg_buy_price": safe_float(item.get('buy_avg_pric')),
+                        "buy_quantity": safe_int(item.get('buy_qty')),
+                        "avg_sell_price": safe_float(item.get('sel_avg_pric')),
+                        "sell_quantity": safe_int(item.get('sell_qty')),
+                        "cmsn_alm_tax": safe_float(item.get('cmsn_alm_tax')),
+                        "profit_amount": safe_int(item.get('pl_amt')),
+                        "profit_rate": safe_float(item.get('prft_rt'))
+                    })
+            else:
+                log_debug("거래 내역이 없어서 빈 배열 반환")
 
             data = {
                 "summaries": {
-                    "total_buy_amount": res['tot_buy_amt'],
-                    "total_sell_amount": res['tot_sell_amt'],
-                    "total_cmsn_tax": res["tot_cmsn_tax"],
-                    "settlement_amount": res['tot_pl_amt'],
-                    "profit_rate": res['tot_prft_rt']
+                    "total_buy_amount": safe_int(res.get('tot_buy_amt')),
+                    "total_sell_amount": safe_int(res.get('tot_sell_amt')),
+                    "total_cmsn_tax": safe_float(res.get("tot_cmsn_tax")),
+                    "settlement_amount": safe_int(res.get('tot_pl_amt')),
+                    "profit_rate": safe_float(res.get('tot_prft_rt'))
                 },
-                "trade_details":trade_details
+                "trade_details": trade_details
             }
 
             return data
