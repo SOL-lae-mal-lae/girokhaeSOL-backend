@@ -40,13 +40,7 @@ class AccountService:
         try:
             log_debug(f"계좌 생성 요청: user_id={user_id}, account_number={account_data.account_number}")
             
-            # 계좌번호 중복 체크
-            existing_account = self.repository.get_account_by_number(account_data.account_number)
-            if existing_account:
-                log_error(f"중복된 계좌번호 - {account_data.account_number}")
-                raise HTTPException(status_code=400, detail="이미 존재하는 계좌번호입니다.")
-            
-            log_debug("계좌번호 중복 체크 완료")
+            log_debug("계좌 생성 시작")
             
             account = self.repository.create_account(user_id, account_data)
             if not account:

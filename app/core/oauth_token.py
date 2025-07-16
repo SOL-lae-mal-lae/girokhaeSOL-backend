@@ -10,14 +10,23 @@ async def get_oauth_token(user_id: str):
         'Content-Type': 'application/json;charset=UTF-8',
     }
     try:
-        # DB에서 사용자의 API 키 조회
+        log_info(f"🔍 OAuth 토큰 발급 시작 - user_id: {user_id}")
+        
+        user_id = request.state.user
         db = next(get_db())
         account_repo = AccountRepository(db)
+
         api_keys = account_repo.get_api_keys_by_user_id(user_id)
+        
+        log_info(f"🔍 DB에서 조회한 API 키: {api_keys}")
         
         if not api_keys:
             log_error(f'사용자의 API 키를 찾을 수 없음: user_id={user_id}')
             return None
+        
+        log_info(f"🔍 키움 API 호출 준비:")
+        log_info(f"  - app_key: {api_keys['app_key']}")
+        log_info(f"  - secret_key: {api_keys['secret_key'][:10]}...")  # 보안상 일부만 출력
         
         url = f'{settings.KIWOOM_BASE_URL}/oauth2/token'
         data = {
@@ -25,6 +34,9 @@ async def get_oauth_token(user_id: str):
             'appkey': api_keys['app_key'],
             'secretkey': api_keys['secret_key'],
         }
+        
+        log_info(f"🔍 요청 URL: {url}")
+        log_info(f"🔍 요청 데이터: {data}")
         
  
         

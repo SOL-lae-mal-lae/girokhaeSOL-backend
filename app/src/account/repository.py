@@ -26,12 +26,6 @@ class AccountRepository:
         try:
             log_debug(f"계좌 생성 시작: user_id={user_id}, account_number={account_data.account_number}")
             
-            # 중복 계좌번호 확인
-            existing = self.get_account_by_number(account_data.account_number)
-            if existing:
-                log_error(f"이미 존재하는 계좌번호: {account_data.account_number}")
-                return None
-            
             # user_id를 설정하여 Account 객체 생성
             account_dict = account_data.dict()
             account_dict['user_id'] = user_id

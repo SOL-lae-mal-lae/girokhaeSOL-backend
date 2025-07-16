@@ -2,6 +2,7 @@ from typing import Dict, Any
 from .models import HomeSummaryData
 from app.database.core import get_db
 from app.logging import log_debug, log_info, log_error
+from app.core.oauth_token import get_oauth_token
 
 import requests
 import json
@@ -18,6 +19,9 @@ class KiwoomAPIClient:
     def get_account_summary(self, token: str, params: Dict[str, Any]):
         """계좌 요약 정보 조회 - 실제 API 호출"""
         try:
+            # 토큰 값 로깅
+            log_debug(f"🔑 전달받은 토큰: {token}")
+            
             # 1. 요청할 API URL
             host = "https://mockapi.kiwoom.com"
             endpoint = '/api/dostk/acnt'
@@ -26,9 +30,13 @@ class KiwoomAPIClient:
             # 2. 헤더 설정
             headers = {
                 'Content-Type': 'application/json;charset=UTF-8', 
-                'authorization': token,  # Bearer 토큰 형식
+                'authorization': token,  # 대문자 Authorization으로 변경
                 'api-id': 'ka10074',  # TR명
             }
+            
+            # 헤더 로깅
+            log_debug(f"📤 요청 헤더: {headers}")
+            log_debug(f"📤 요청 파라미터: {params}")
 
             # 3. API 호출 (POST 요청)
             response = requests.post(url, headers=headers, json=params)
