@@ -44,9 +44,9 @@ EXCLUDE_PATH_PREFIXES = []
 
 
 
-# JWT 미들웨어 등록
-app.add_middleware(JWTMiddleware)
+# 미들웨어 등록 (역순으로 실행되므로 의존성이 있는 미들웨어를 나중에 등록)
 app.add_middleware(KiwoomOAuthMiddleware)
+app.add_middleware(JWTMiddleware)
 # 라우터 등록
 app.include_router(account_router, prefix="/api/v1/accounts", tags=["accounts"])
 app.include_router(financial_statements_router, prefix="/api/v1/financial-statements", tags=["financial-statements"])
