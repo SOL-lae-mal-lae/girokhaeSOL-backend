@@ -29,6 +29,7 @@ class TradeLogDetailRepository:
         self.db.add(trade_summary)
 
     def insert_trade_details(self, trade_log_id, details):
+        is_inserted = False
         for d in details:
             trade_detail = TradeDetail(
                 trade_log_id=trade_log_id,
@@ -44,8 +45,9 @@ class TradeLogDetailRepository:
                 profit_rate=d.profit_rate
             )
             self.db.add(trade_detail)
-            self.db.merge(TradeLogAccount(trade_log_id=trade_log_id, account_id=d.account_id))
-
+            if not is_inserted:
+                self.db.merge(TradeLogAccount(trade_log_id=trade_log_id, account_id=d.account_id))
+                is_inserted = True
     def insert_charts(self, trade_log_id, charts):
         for c in charts:
             chart = Chart(
