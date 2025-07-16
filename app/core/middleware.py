@@ -16,7 +16,6 @@ EXCLUDE_PATHS = ["/docs",
                  "/api/v1/recent-post",
                  "/api/v1/community",
                  "/api/v1/financial-statements",
-                 "/api/v1/home/summary",
                  ]
 
 class JWTMiddleware(BaseHTTPMiddleware):
@@ -32,7 +31,6 @@ class JWTMiddleware(BaseHTTPMiddleware):
                 authorized_parties=[settings.CLERK_KEY_URL]
             )
         )
-        
         request.state.user = request_state.payload.get('sub')
         return await call_next(request)
 
@@ -51,7 +49,6 @@ class KiwoomOAuthMiddleware(BaseHTTPMiddleware):
         if any(request.url.path.startswith(path) for path in KIWOOM_API_USE_PATH):
             # 사용자 ID 가져오기 (JWT 미들웨어에서 설정됨)
             user_id = getattr(request.state, 'user', None)
-            
             if not user_id:
                 # 사용자 ID가 없으면 인증 오류
                 request.state.token = None

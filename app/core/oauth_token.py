@@ -12,7 +12,6 @@ async def get_oauth_token(user_id: str):
     try:
         log_info(f"🔍 OAuth 토큰 발급 시작 - user_id: {user_id}")
         
-        user_id = request.state.user
         db = next(get_db())
         account_repo = AccountRepository(db)
 
