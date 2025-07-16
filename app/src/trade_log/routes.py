@@ -15,8 +15,12 @@ def create_trade_log_api(
     user_id = getattr(request.state, "user", None)
     if not user_id:
         raise HTTPException(status_code=401, detail="인증 필요")
-    result = create_trade_log_service(user_id, body, db)
-    return {
-        "message": "success",
-        "data": None,
-    }
+    try:
+      create_trade_log_service(user_id, body, db)
+
+      return {
+          "message": "success",
+          "data": None,
+      }
+    except Exception as e:
+      raise HTTPException(status_code=500, detail="매매일지 저장에 실패하였습니다.")
