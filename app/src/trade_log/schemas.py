@@ -27,6 +27,9 @@ class ChartSchema(BaseModel):
     end_date: date
     sequence: int
 
+class ChartSchemaWithStockName(ChartSchema):
+    stock_name: str
+
 class NewsLinkSchema(BaseModel):
     url: str
       
@@ -41,6 +44,9 @@ class TradeLogCreateSchema(BaseModel):
     evaluation: str
     news_links: List[NewsLinkSchema]
 
+class TradeLogSchemaWithStockName(TradeLogCreateSchema):
+    charts: List[ChartSchemaWithStockName]
+
 class TradeLogResponseSchema(BaseModel):
     message: str
-    data: TradeLogCreateSchema
+    data: TradeLogSchemaWithStockName

@@ -25,7 +25,7 @@ def create_trade_log_api(
     except Exception as e:
       raise HTTPException(status_code=500, detail="매매일지 저장에 실패하였습니다.")
 
-@router.post('/detail',
+@router.get('/detail',
              response_model=TradeLogResponseSchema)
 def get_trade_log(date: str, request: Request, db: Session = Depends(get_db)):
 
