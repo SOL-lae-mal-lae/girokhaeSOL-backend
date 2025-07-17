@@ -42,14 +42,5 @@ class TradeLogCreateSchema(BaseModel):
     news_links: List[NewsLinkSchema]
 
 class TradeLogResponseSchema(BaseModel):
-    id: int
-    user_id: str
-    date: date
-    investment_type: str
-    rationale: str
-    evaluation: str
-    summary: TradeSummarySchema
-    details: List[TradeDetailSchema]
-    charts: List[ChartSchema]
-    news_links: List[NewsLinkSchema]
-    sentiments: List[str]
+    message: str
+    data: TradeLogCreateSchema

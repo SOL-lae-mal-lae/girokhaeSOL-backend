@@ -21,3 +21,89 @@ def create_trade_log_service(user_id: str, body, db: Session):
     db.commit()
 
     return True
+
+def get_trade_log_service_by_date(date: str, user_id: str, db: Session):
+    """
+    특정 날짜의 매매일지 상세 정보를 조회합니다.
+    """
+    try:
+        # 1. 해당 날짜와 사용자의 trade_log 조회
+        trade_log = db.query(TradeLog).filter(
+            TradeLog.date == date,
+            TradeLog.user_id == user_id
+        ).first()
+        
+        if not trade_log:
+            raise HTTPException(status_code=404, detail="해당 날짜의 매매일지를 찾을 수 없습니다.")
+        
+        trade_log_id = trade_log.id
+        
+        # 2. trade_details 조회
+        trade_details = db.query(TradeDetail).filter(
+            TradeDetail.trade_log_id == trade_log_id
+        ).all()
+        
+        # 3. trade_summaries 조회
+        trade_summary = db.query(TradeSummary).filter(
+            TradeSummary.trade_log_id == trade_log_id
+        ).first()
+        
+        # 4. charts 조회 (sequence 순으로 정렬)
+        charts = db.query(Chart).filter(
+            Chart.trade_log_id == trade_log_id
+        ).order_by(Chart.sequence.asc()).all()
+        
+        # 5. sentiments 조회
+        sentiments = db.query(Sentiment.name).join(
+            TradeLogSentiment, Sentiment.id == TradeLogSentiment.sentiment_id
+        ).filter(
+            TradeLogSentiment.trade_log_id == trade_log_id
+        ).all()
+        
+        # 결과 데이터 구성
+        result = {
+            "date": trade_log.date,
+            "summaries": {
+                "total_buy_amount": trade_summary.total_buy_amount if trade_summary else 0,
+                "total_sell_amount": trade_summary.total_sell_amount if trade_summary else 0,
+                "total_cmsn_tax": trade_summary.total_cmsn_tax if trade_summary else 0.0,
+                "settlement_amount": trade_summary.settlement_amount if trade_summary else 0,
+                "profit_rate": trade_summary.profit_rate if trade_summary else 0.0
+            },
+            "trade_details": [
+                {
+                    "account_id": detail.account_id,
+                    "stock_name": detail.stock_name,
+                    "stock_code": detail.stock_code,
+                    "avg_buy_price": detail.avg_buy_price,
+                    "avg_sell_price": detail.avg_sell_price,
+                    "buy_quantity": detail.buy_quantity,
+                    "sell_quantity": detail.sell_quantity,
+                    "cmsn_alm_tax": detail.cmsn_alm_tax,
+                    "profit_amount": detail.profit_amount,
+                    "profit_rate": detail.profit_rate
+                }
+                for detail in trade_details
+            ],
+            "charts": [
+                {
+                    "stock_code": chart.stock_code,
+                    "start_date": chart.start_date,
+                    "end_date": chart.end_date,
+                    "sequence": chart.sequence
+                }
+                for chart in charts
+            ],
+            "investment_type": trade_log.investment_type,
+            "sentiments": [sentiment.name for sentiment in sentiments],
+            "rationale": trade_log.rationale,
+            "evaluation": trade_log.evaluation,
+            "news_links": []  # news_links는 현재 구현되지 않았으므로 빈 배열
+        }
+        
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"매매일지 조회 중 오류가 발생했습니다: {str(e)}")
