@@ -4,6 +4,9 @@ from app.src.common_models.users.model import User
 from .repository import TradeLogDetailRepository
 from .model import TradeLog, TradeSummary, TradeDetail, Chart, NewsLink, TradeLogSentiment, Sentiment
 from .schemas import TradeLogResponseSchema, TradeSummarySchema, TradeDetailSchema, ChartSchema, NewsLinkSchema
+from ..stock_search.model import Stock
+from ...logging import log_info
+
 
 def create_trade_log_service(user_id: str, body, db: Session):
     # user_id 존재 확인
@@ -48,8 +51,10 @@ def get_trade_log_service_by_date(date: str, user_id: str, db: Session):
             TradeSummary.trade_log_id == trade_log_id
         ).first()
         
-        # 4. charts 조회 (sequence 순으로 정렬)
-        charts = db.query(Chart).filter(
+        # 4. charts 조회 (sequence 순으로 정렬) - stocks 테이블과 LEFT JOIN
+        charts = db.query(Chart, Stock.stock_name).outerjoin(
+            Stock, Chart.stock_code == Stock.stock_code
+        ).filter(
             Chart.trade_log_id == trade_log_id
         ).order_by(Chart.sequence.asc()).all()
         
@@ -87,12 +92,13 @@ def get_trade_log_service_by_date(date: str, user_id: str, db: Session):
             ],
             "charts": [
                 {
-                    "stock_code": chart.stock_code,
-                    "start_date": chart.start_date,
-                    "end_date": chart.end_date,
-                    "sequence": chart.sequence
+                    "stock_name": chart_tuple[1] if chart_tuple[1] else "",  # Stock.stock_name (LEFT JOIN이므로 None일 수 있음)
+                    "stock_code": chart_tuple[0].stock_code,
+                    "start_date": chart_tuple[0].start_date,
+                    "end_date": chart_tuple[0].end_date,
+                    "sequence": chart_tuple[0].sequence
                 }
-                for chart in charts
+                for chart_tuple in charts
             ],
             "investment_type": trade_log.investment_type,
             "sentiments": [sentiment.name for sentiment in sentiments],
