@@ -20,24 +20,24 @@ from app.src.account.model import Account
 
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+# FastAPI 앱 생성
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    description="국내주식 계좌 관리 API",
+    version="1.0.0"
+)
 
 # CORS 설정
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://localhost:8080"],  # 프론트엔드에서 요청을 허용할 주소
     allow_credentials=True,
-    allow_methods=["*"],  # 모든 HTTP 메서드를 허용
+    allow_methods=["*"],  # 모든 HTTP 메서드를 허용 (OPTIONS 포함)
     allow_headers=["*"],  # 모든 헤더를 허용
 )
+
 # 테이블 생성
 Base.metadata.create_all(bind=engine)
-
-app = FastAPI(
-    title=settings.PROJECT_NAME,
-    description="국내주식 계좌 관리 API",
-    version="1.0.0"
-)
 
 # 리턴 시 예외처리 하고픈 부분이 있다면 아래에 넣어주세요~
 EXCLUDE_PATH_PREFIXES = []

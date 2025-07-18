@@ -21,6 +21,10 @@ EXCLUDE_PATHS = ["/docs",
 class JWTMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next):
+        # OPTIONS 요청 (CORS preflight)은 인증 제외
+        if request.method == "OPTIONS":
+            return await call_next(request)
+            
         # 인증 제외 경로라면 건너뛰기
         if any(request.url.path.startswith(path) for path in EXCLUDE_PATHS):
             return await call_next(request)
@@ -31,7 +35,15 @@ class JWTMiddleware(BaseHTTPMiddleware):
                 authorized_parties=[settings.CLERK_KEY_URL]
             )
         )
-        request.state.user = request_state.payload.get('sub')
+        
+        # payload가 None인 경우 처리
+        if request_state and request_state.payload:
+            request.state.user = request_state.payload.get('sub')
+        else:
+            # 인증 실패 시 401 에러 반환
+            from fastapi import HTTPException
+            raise HTTPException(status_code=401, detail="인증이 필요합니다.")
+            
         return await call_next(request)
 
 KIWOOM_API_USE_PATH = [

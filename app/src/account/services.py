@@ -15,11 +15,12 @@ class AccountService:
             accounts = self.repository.get_accounts_by_user_id(user_id)
             log_debug(f"found {len(accounts)} accounts")  # ✅ logging 사용
             
-            # 응답 형식에 맞게 데이터 변환 - account_id도 포함
+            # 응답 형식에 맞게 데이터 변환 - account_id와 is_primary도 포함
             account_data = [
                 {
                     "account_id": account.id,
-                    "account_number": account.account_number
+                    "account_number": account.account_number,
+                    "is_primary": account.is_primary
                 }
                 for account in accounts
             ]
@@ -38,6 +39,12 @@ class AccountService:
         """계좌 생성"""
         try:
             log_debug(f"계좌 생성 요청: user_id={user_id}, account_number={account_data.account_number}")
+            
+            # 중복 계좌번호 체크
+            existing_account = self.repository.get_account_by_number(account_data.account_number)
+            if existing_account:
+                log_info(f"중복 계좌번호 감지: {account_data.account_number}")
+                raise HTTPException(status_code=400, detail="이미 존재하는 계좌번호입니다.")
             
             log_debug("계좌 생성 시작")
             
@@ -63,5 +70,28 @@ class AccountService:
             log_error(f"TRACEBACK: {traceback.format_exc()}")
             raise HTTPException(status_code=400, detail="오류가 발생했습니다.")
     
+    def set_primary_account(self, user_id: str, account_id: int) -> dict:
+        """대표계좌 설정"""
+        try:
+            log_debug(f"대표계좌 설정 요청: user_id={user_id}, account_id={account_id}")
+            
+            # 해당 사용자의 모든 계좌를 is_primary=False로 설정
+            self.repository.reset_all_primary_accounts(user_id)
+            
+            # 지정된 계좌만 is_primary=True로 설정
+            success = self.repository.set_account_as_primary(account_id, user_id)
+            
+            if not success:
+                raise HTTPException(status_code=404, detail="계좌를 찾을 수 없습니다.")
+            
+            log_info(f"대표계좌 설정 완료: account_id={account_id}")
+            return {"message": "대표계좌가 설정되었습니다.", "account_id": account_id}
+        
+        except HTTPException:
+            raise
+        except Exception as e:
+            log_error(f"set_primary_account 실패: {e}")
+            raise HTTPException(status_code=400, detail="오류가 발생했습니다.")
+
    
 

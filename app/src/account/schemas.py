@@ -36,6 +36,7 @@ class ErrorResponse(BaseModel):
 class AccountListResponse(BaseModel):
     account_number: str        # 계좌 번호
     account_id: int             # 계좌 ID
+    is_primary: bool = False    # 대표계좌 여부
     
 
 

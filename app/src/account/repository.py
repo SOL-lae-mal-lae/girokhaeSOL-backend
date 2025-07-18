@@ -20,6 +20,16 @@ class AccountRepository:
             log_error(f"사용자별 계좌 조회 중 오류: {e}")
             return []
 
+    def get_account_by_number(self, account_number: str) -> Optional[Account]:
+        """계좌번호로 계좌 조회 (중복 체크용)"""
+        try:
+            log_debug(f"계좌번호 중복 체크: account_number={account_number}")
+            account = self.db.query(Account).filter(Account.account_number == account_number).first()
+            return account
+        except Exception as e:
+            log_error(f"계좌번호 조회 중 오류: {e}")
+            return None
+
     
     def create_account(self, user_id: str, account_data: AccountCreate) -> Optional[Account]:
         """계좌 생성"""
@@ -63,5 +73,37 @@ class AccountRepository:
             log_error(f"API 키 조회 중 오류: {e}")
             return None
     
+    def reset_all_primary_accounts(self, user_id: str) -> bool:
+        """사용자의 모든 계좌를 대표계좌가 아닌 상태로 설정"""
+        try:
+            log_debug(f"모든 대표계좌 해제: user_id={user_id}")
+            self.db.query(Account).filter(Account.user_id == user_id).update({"is_primary": False})
+            self.db.commit()
+            return True
+        except Exception as e:
+            log_error(f"대표계좌 해제 중 오류: {e}")
+            self.db.rollback()
+            return False
+    
+    def set_account_as_primary(self, account_id: int, user_id: str) -> bool:
+        """특정 계좌를 대표계좌로 설정"""
+        try:
+            log_debug(f"대표계좌 설정: account_id={account_id}, user_id={user_id}")
+            result = self.db.query(Account).filter(
+                Account.id == account_id, 
+                Account.user_id == user_id
+            ).update({"is_primary": True})
+            
+            if result == 0:
+                log_error(f"계좌를 찾을 수 없음: account_id={account_id}, user_id={user_id}")
+                return False
+                
+            self.db.commit()
+            return True
+        except Exception as e:
+            log_error(f"대표계좌 설정 중 오류: {e}")
+            self.db.rollback()
+            return False
+
   
 
