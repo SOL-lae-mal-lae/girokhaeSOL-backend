@@ -53,24 +53,24 @@ KIWOOM_API_USE_PATH = [
 ]
 
 class KiwoomOAuthMiddleware(BaseHTTPMiddleware):
-    expires_dt= ""
-    token=''
+    expires_dt = ""
+    token = ""
 
     async def dispatch(self, request: Request, call_next):
-        if any(request.url.path.startswith(path) for path in KIWOOM_API_USE_PATH):
-            # 사용자 ID 가져오기 (JWT 미들웨어에서 설정됨)
+        if any(request.url.path.startswith(path) for path in KIWOOM_API_USE_PATH) or "/set-primary" in request.url.path:
             user_id = getattr(request.state, 'user', None)
             if not user_id:
-                # 사용자 ID가 없으면 인증 오류
                 request.state.token = None
                 return await call_next(request)
-            
-            if not self.token or datetime.strptime(self.expires_dt, '%Y%m%d%H%M%S') < datetime.now():
+
+            # ✅ 대표 계좌 변경 시엔 무조건 재발급
+            force_refresh = "/set-primary" in request.url.path
+
+            if force_refresh or not self.token or datetime.strptime(self.expires_dt, '%Y%m%d%H%M%S') < datetime.now():
                 res = await get_oauth_token(user_id)
                 if res:
-                    token, expires_dt = res.get('token'), res.get('expires_dt')
-                    self.token = token
-                    self.expires_dt = expires_dt
+                    self.token = res.get('token')
+                    self.expires_dt = res.get('expires_dt')
                     request.state.token = self.token
                 else:
                     request.state.token = None

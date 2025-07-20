@@ -73,37 +73,59 @@ class AccountRepository:
             log_error(f"API 키 조회 중 오류: {e}")
             return None
     
-    def reset_all_primary_accounts(self, user_id: str) -> bool:
-        """사용자의 모든 계좌를 대표계좌가 아닌 상태로 설정"""
+    def get_primary_account_by_user_id(self, user_id: str) -> Optional[Account]:
+        """사용자의 주계좌 조회"""
         try:
-            log_debug(f"모든 대표계좌 해제: user_id={user_id}")
-            self.db.query(Account).filter(Account.user_id == user_id).update({"is_primary": False})
-            self.db.commit()
-            return True
-        except Exception as e:
-            log_error(f"대표계좌 해제 중 오류: {e}")
-            self.db.rollback()
-            return False
-    
-    def set_account_as_primary(self, account_id: int, user_id: str) -> bool:
-        """특정 계좌를 대표계좌로 설정"""
-        try:
-            log_debug(f"대표계좌 설정: account_id={account_id}, user_id={user_id}")
-            result = self.db.query(Account).filter(
-                Account.id == account_id, 
-                Account.user_id == user_id
-            ).update({"is_primary": True})
+            log_debug(f"주계좌 조회 시작: user_id={user_id}")
+            account = self.db.query(Account).filter(
+                Account.user_id == user_id,
+                Account.is_primary == True
+            ).first()
             
-            if result == 0:
-                log_error(f"계좌를 찾을 수 없음: account_id={account_id}, user_id={user_id}")
-                return False
-                
-            self.db.commit()
-            return True
+            if account:
+                log_debug(f"주계좌 조회 완료: account_id={account.id}")
+            else:
+                log_debug(f"주계좌를 찾을 수 없음: user_id={user_id}")
+            
+            return account
         except Exception as e:
-            log_error(f"대표계좌 설정 중 오류: {e}")
+            log_error(f"주계좌 조회 중 오류: {e}")
+            return None
+    
+    def clear_all_primary_accounts(self, user_id: str):
+        """사용자의 모든 계좌에서 is_primary 제거"""
+        try:
+            self.db.query(Account).filter(Account.user_id == user_id).update(
+                {"is_primary": False}
+            )
+            self.db.commit()
+            log_debug(f"모든 주계좌 설정 해제 완료: user_id={user_id}")
+        except Exception as e:
+            log_error(f"주계좌 설정 해제 중 오류: {e}")
             self.db.rollback()
-            return False
-
+            raise
+    
+    def set_account_as_primary(self, account_id: int, user_id: str) -> Optional[Account]:
+        """특정 계좌를 주계좌로 설정"""
+        try:
+            account = self.db.query(Account).filter(
+                Account.id == account_id,
+                Account.user_id == user_id
+            ).first()
+            
+            if account:
+                account.is_primary = True
+                self.db.commit()
+                self.db.refresh(account)
+                log_info(f"주계좌 설정 완료: account_id={account_id}")
+                return account
+            else:
+                log_error(f"계좌를 찾을 수 없음: account_id={account_id}, user_id={user_id}")
+                return None
+        except Exception as e:
+            log_error(f"주계좌 설정 중 오류: {e}")
+            self.db.rollback()
+            raise
+    
   
 

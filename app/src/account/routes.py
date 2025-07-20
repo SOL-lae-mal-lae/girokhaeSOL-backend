@@ -73,6 +73,39 @@ def create_account(
     except Exception as e:
         raise HTTPException(status_code=400, detail="오류가 발생했습니다.")
 
+@router.post(
+    "/{account_id}/set-primary",
+    responses={
+        200: {"description": "주계좌 설정 완료"},
+        400: {"model": ErrorResponse, "description": "잘못된 요청"},
+        401: {"model": ErrorResponse, "description": "인증이 필요합니다."},
+        404: {"description": "계좌를 찾을 수 없음"}
+    }
+)
+def set_primary_account(
+    account_id: int,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """계좌를 주계좌로 설정 (계좌 전환)"""
+    try:
+        user_id = request.state.user
+        
+        if not user_id:
+            raise HTTPException(status_code=401, detail="인증이 필요합니다.")
+        
+        service = AccountService(db)
+        account = service.set_primary_account(user_id, account_id)
+        
+        if not account:
+            raise HTTPException(status_code=404, detail="계좌를 찾을 수 없습니다.")
+        
+        return {"message": "주계좌 설정 완료", "account_id": account_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="오류가 발생했습니다.")
+
 @router.patch(
     "/{account_id}/primary",
     responses={
