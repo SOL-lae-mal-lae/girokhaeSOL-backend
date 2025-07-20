@@ -64,7 +64,9 @@ def get_trade_log_service_by_date(date: str, user_id: str, db: Session):
         ).filter(
             TradeLogSentiment.trade_log_id == trade_log_id
         ).all()
-        
+
+        news_links = db.query(NewsLink).filter(NewsLink.trade_log_id == trade_log_id).all()
+
         # 결과 데이터 구성
         result = {
             "date": trade_log.date,
@@ -104,7 +106,7 @@ def get_trade_log_service_by_date(date: str, user_id: str, db: Session):
             "sentiments": [sentiment.name for sentiment in sentiments],
             "rationale": trade_log.rationale,
             "evaluation": trade_log.evaluation,
-            "news_links": []  # news_links는 현재 구현되지 않았으므로 빈 배열
+            "news_links": [{"url": news.url} for news in news_links] if news_links else []
         }
         
         return result
