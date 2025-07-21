@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 from typing import List
+import os
 
 class Settings(BaseSettings):
     PROJECT_NAME: str
@@ -25,6 +26,8 @@ class Settings(BaseSettings):
     CLERK_KEY_URL: str
 
     KIWOOM_BASE_URL: str
+
+    ENCRYPTION_KEY: str
     
     class Config:
         env_file = ".env"

@@ -34,10 +34,10 @@ class AccountRepository:
     def create_account(self, user_id: str, account_data: AccountCreate) -> Optional[Account]:
         """계좌 생성"""
         try:
-            log_debug(f"계좌 생성 시작: user_id={user_id}, account_number={account_data.account_number}")
+            log_debug(f"계좌 생성 시작: user_id={user_id}, account_number={account_data['account_number']}")
             
             # user_id를 설정하여 Account 객체 생성
-            account_dict = account_data.dict()
+            account_dict = account_data
             account_dict['user_id'] = user_id
             
             account = Account(**account_dict)
@@ -126,6 +126,6 @@ class AccountRepository:
             log_error(f"주계좌 설정 중 오류: {e}")
             self.db.rollback()
             raise
-    
-  
+
+
 
