@@ -28,7 +28,7 @@ async def get_statement_by_stock_code(
     
     service = FinancialStatementService(db)
     result = service.get_statement_by_stock_code(stock_code)
-    
+    print('result',result)
     if "error" in result:
         log_error(f"종목코드 재무제표 조회 실패: {result['error']}")
         raise HTTPException(
