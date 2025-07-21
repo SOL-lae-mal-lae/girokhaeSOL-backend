@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     KIWOOM_BASE_URL: str
     SCHEDULER_APP_KEY: str
     SCHEDULER_SECRET_KEY: str
+
+    PERPLEXITY_API_KEY: str
+    
     class Config:
         env_file = ".env"
 
