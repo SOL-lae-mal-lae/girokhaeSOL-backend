@@ -6,10 +6,8 @@ from app.src.trade_log.month_trade_log.routes import router as trade_log_router
 from app.src.trade_log.financial_statements.routes import router as financial_statements_router
 from app.src.Home.trade_summary.routes import router as home_router
 from app.logging import log_info
-from fastapi.responses import JSONResponse
 from app.core.middleware import JWTMiddleware, KiwoomOAuthMiddleware
 from app.core.account_token_middleware import AccountTokenMiddleware
-import json
 from app.src.stock_search.routes import router as stock_search_router
 from app.src.trade_log.chart.routes import router as chart_router
 from app.src.trade_log.routes import router as trade_log_post_router
@@ -54,7 +52,6 @@ app.include_router(account_router, prefix="/api/v1/accounts", tags=["accounts"])
 app.include_router(financial_statements_router, prefix="/api/v1/financial-statements", tags=["financial-statements"])
 app.include_router(home_router, prefix="/api/v1/home", tags=["home"])
 app.include_router(trade_log_router, prefix="/api/v1/trade-logs", tags=["trade_logs"])
-app.include_router(stock_search_router, prefix="/api/v1/stock-search", tags=["stock_search"])
 app.include_router(stock_search_router, prefix="/api/v1/trade-logs", tags=["trade_logs"])
 app.include_router(chart_router, prefix="/api/v1/trade-logs", tags=["trade_logs"])
 app.include_router(trade_log_post_router, prefix="/api/v1/trade-logs", tags=["trade_logs"])
