@@ -13,6 +13,9 @@ class AccountService:
         try:
             log_debug(f"user_id = '{user_id}'")  # ✅ logging 사용
             accounts = self.repository.get_accounts_by_user_id(user_id)
+            primary_account = self.get_primary_account(user_id)
+
+
             log_debug(f"found {len(accounts)} accounts")  # ✅ logging 사용
             
             # 응답 형식에 맞게 데이터 변환 - account_id와 is_primary도 포함
@@ -20,13 +23,16 @@ class AccountService:
                 {
                     "account_id": account.id,
                     "account_number": account.account_number,
-                    "is_primary": account.is_primary
+                    "is_primary": primary_account and account.id == primary_account.id
+                    
                 }
                 for account in accounts
             ]
-            
+
+
             log_debug(f"account_data = {account_data}")  # ✅ logging 사용
-            
+
+
             return AccountGetResponse(
                 message="계좌 목록 불러오기 완료",
                 data=account_data
@@ -70,28 +76,45 @@ class AccountService:
             log_error(f"TRACEBACK: {traceback.format_exc()}")
             raise HTTPException(status_code=400, detail="오류가 발생했습니다.")
     
-    def set_primary_account(self, user_id: str, account_id: int) -> dict:
-        """대표계좌 설정"""
+    def get_primary_account(self, user_id: str):
+        """사용자의 주계좌(활성 계좌) 조회"""
         try:
-            log_debug(f"대표계좌 설정 요청: user_id={user_id}, account_id={account_id}")
-            
-            # 해당 사용자의 모든 계좌를 is_primary=False로 설정
-            self.repository.reset_all_primary_accounts(user_id)
-            
-            # 지정된 계좌만 is_primary=True로 설정
-            success = self.repository.set_account_as_primary(account_id, user_id)
-            
-            if not success:
-                raise HTTPException(status_code=404, detail="계좌를 찾을 수 없습니다.")
-            
-            log_info(f"대표계좌 설정 완료: account_id={account_id}")
-            return {"message": "대표계좌가 설정되었습니다.", "account_id": account_id}
-        
-        except HTTPException:
-            raise
+            return self.repository.get_primary_account_by_user_id(user_id)
+        except Exception as e:
+            log_error(f"get_primary_account 실패: {e}")
+            return None
+    
+    def set_primary_account(self, user_id: str, account_id: int):
+        """계좌를 주계좌로 설정"""
+        try:
+            # 먼저 모든 계좌의 is_primary를 False로 설정
+            self.repository.clear_all_primary_accounts(user_id)
+            # 선택된 계좌를 주계좌로 설정
+            return self.repository.set_account_as_primary(account_id, user_id)
         except Exception as e:
             log_error(f"set_primary_account 실패: {e}")
-            raise HTTPException(status_code=400, detail="오류가 발생했습니다.")
+            raise HTTPException(status_code=400, detail="주계좌 설정에 실패했습니다.")
 
-   
+
+    
+    def get_primary_account(self, user_id: str):
+        """사용자의 주계좌(활성 계좌) 조회"""
+        try:
+            return self.repository.get_primary_account_by_user_id(user_id)
+        except Exception as e:
+            log_error(f"get_primary_account 실패: {e}")
+            return None
+    
+    def set_primary_account(self, user_id: str, account_id: int):
+        """계좌를 주계좌로 설정"""
+        try:
+            # 먼저 모든 계좌의 is_primary를 False로 설정
+            self.repository.clear_all_primary_accounts(user_id)
+            # 선택된 계좌를 주계좌로 설정
+            return self.repository.set_account_as_primary(account_id, user_id)
+        except Exception as e:
+            log_error(f"set_primary_account 실패: {e}")
+            raise HTTPException(status_code=400, detail="주계좌 설정에 실패했습니다.")
+
+
 

@@ -35,8 +35,8 @@ class ErrorResponse(BaseModel):
 # 계좌 정보 조회 API의 응답 형식을 정의합니다.
 class AccountListResponse(BaseModel):
     account_number: str        # 계좌 번호
-    account_id: int             # 계좌 ID
-    is_primary: bool = False    # 대표계좌 여부
+    account_id: int            # 계좌 ID
+    is_primary: bool           # 주계좌 여부
     
 
 

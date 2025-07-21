@@ -10,6 +10,5 @@ class Account(Base):
     account_number = Column(String(20), nullable=False)
     app_key = Column(String(255), nullable=False)  # 외부 API 인증을 위한 app_key
     secret_key = Column(String(255), nullable=False)  # 외부 API 인증을 위한 secret_key
-    is_primary = Column(Boolean, default=False, nullable=False)  # 대표계좌 여부
-    
-   
+    is_primary = Column(Boolean, default=False, nullable=False)
+
