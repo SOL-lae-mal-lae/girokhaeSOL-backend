@@ -8,6 +8,8 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 from Crypto.Hash import MD5
 
+
+
 def evpkdf(password, salt, key_size=32, iv_size=16):
     """
     CryptoJS의 EvpKDF 방식 구현 (MD5, 1회 반복)
@@ -46,13 +48,14 @@ async def get_oauth_token(user_id: str):
         db = next(get_db())
         account_repo = AccountRepository(db)
 
-        api_keys = account_repo.get_api_keys_by_user_id(user_id)
+        # 대표 계좌 기준으로 API 키 조회
+        api_keys = account_repo.get_api_keys_of_primary_account(user_id)
 
         log_info(f"🔍 DB에서 조회한 API 키: {api_keys}")
         print(f"[DEBUG] DB에서 조회한 API 키: {api_keys}")
 
         if not api_keys:
-            log_error(f'사용자의 API 키를 찾을 수 없음: user_id={user_id}')
+            log_error(f'사용자의 대표 계좌 API 키를 찾을 수 없음: user_id={user_id}')
             return None
 
         # 복호화된 키 사용
