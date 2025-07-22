@@ -19,6 +19,7 @@ class AccountRepository:
         except Exception as e:
             log_error(f"사용자별 계좌 조회 중 오류: {e}")
             return []
+    
 
     def get_account_by_number(self, account_number: str) -> Optional[Account]:
         """계좌번호로 계좌 조회 (중복 체크용)"""
@@ -34,10 +35,10 @@ class AccountRepository:
     def create_account(self, user_id: str, account_data: AccountCreate) -> Optional[Account]:
         """계좌 생성"""
         try:
-            log_debug(f"계좌 생성 시작: user_id={user_id}, account_number={account_data.account_number}")
+            log_debug(f"계좌 생성 시작: user_id={user_id}, account_number={account_data['account_number']}")
             
             # user_id를 설정하여 Account 객체 생성
-            account_dict = account_data.dict()
+            account_dict = account_data
             account_dict['user_id'] = user_id
             
             account = Account(**account_dict)
@@ -54,27 +55,29 @@ class AccountRepository:
     
     
     
-    def get_api_keys_by_user_id(self, user_id: str) -> Optional[dict]:
-        """사용자 ID로 API 키 조회"""
+    def get_api_keys_of_primary_account(self, user_id: str) -> Optional[dict]:
+        """대표 계좌의 API 키 조회"""
         try:
-            log_debug(f"API 키 조회 시작: user_id={user_id}")
-            account = self.db.query(Account).filter(Account.user_id == user_id).first()
-            
+            log_debug(f"대표 계좌 API 키 조회 시작: user_id={user_id}")
+            account = self.db.query(Account).filter(
+                Account.user_id == user_id,
+                Account.is_primary == True
+            ).first()
             if account:
-                log_debug(f"API 키 조회 완료: user_id={user_id}")
+                log_debug(f"대표 계좌 API 키 조회 완료: account_id={account.id}")
                 return {
                     "app_key": account.app_key,
                     "secret_key": account.secret_key
                 }
             else:
-                log_error(f"사용자의 계좌를 찾을 수 없음: user_id={user_id}")
+                log_error(f"대표 계좌를 찾을 수 없음: user_id={user_id}")
                 return None
         except Exception as e:
-            log_error(f"API 키 조회 중 오류: {e}")
+            log_error(f"대표 계좌 API 키 조회 중 오류: {e}")
             return None
     
     def get_primary_account_by_user_id(self, user_id: str) -> Optional[Account]:
-        """사용자의 주계좌 조회"""
+        """사용자의 주계좌 조회. 없으면 첫 번째 계좌를 대표 계좌로 자동 지정"""
         try:
             log_debug(f"주계좌 조회 시작: user_id={user_id}")
             account = self.db.query(Account).filter(
@@ -84,10 +87,20 @@ class AccountRepository:
             
             if account:
                 log_debug(f"주계좌 조회 완료: account_id={account.id}")
+                return account
             else:
-                log_debug(f"주계좌를 찾을 수 없음: user_id={user_id}")
-            
-            return account
+                log_debug(f"주계좌를 찾을 수 없음: user_id={user_id}, 첫 번째 계좌를 대표 계좌로 지정 시도")
+                # 첫 번째 계좌를 찾아서 대표 계좌로 지정
+                first_account = self.db.query(Account).filter(Account.user_id == user_id).order_by(Account.id.asc()).first()
+                if first_account:
+                    first_account.is_primary = True
+                    self.db.commit()
+                    self.db.refresh(first_account)
+                    log_info(f"첫 번째 계좌를 대표 계좌로 자동 지정: account_id={first_account.id}")
+                    return first_account
+                else:
+                    log_debug(f"해당 유저의 계좌가 존재하지 않음: user_id={user_id}")
+                    return None
         except Exception as e:
             log_error(f"주계좌 조회 중 오류: {e}")
             return None
@@ -126,6 +139,6 @@ class AccountRepository:
             log_error(f"주계좌 설정 중 오류: {e}")
             self.db.rollback()
             raise
-    
-  
+
+
 

@@ -54,7 +54,14 @@ class AccountService:
             
             log_debug("계좌 생성 시작")
             
-            account = self.repository.create_account(user_id, account_data)
+            # Check if the user has any existing accounts
+            user_accounts = self.repository.get_accounts_by_user_id(user_id)  # Updated method name
+            is_primary = len(user_accounts) == 0  # Set as primary if no accounts exist
+            
+            account_data_dict = account_data.dict()
+            account_data_dict['is_primary'] = is_primary
+            
+            account = self.repository.create_account(user_id, account_data_dict)
             if not account:
                 log_error("계좌 생성 실패")
                 raise HTTPException(status_code=400, detail="계좌 생성에 실패했습니다.")
