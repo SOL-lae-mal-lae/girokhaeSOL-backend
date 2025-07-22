@@ -33,6 +33,8 @@ class Settings(BaseSettings):
     SCHEDULER_APP_KEY: str
     SCHEDULER_SECRET_KEY: str
 
+    PERPLEXITY_API_KEY: str
+    
     class Config:
         env_file = ".env"
 

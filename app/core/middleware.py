@@ -34,15 +34,11 @@ class JWTMiddleware(BaseHTTPMiddleware):
                 authorized_parties=[settings.CLERK_KEY_URL]
             )
         )
-        
-        # payload가 None인 경우 처리
-        if request_state and request_state.payload:
-            request.state.user = request_state.payload.get('sub')
-        else:
-            # 인증 실패 시 401 에러 반환
-            from fastapi import HTTPException
-            raise HTTPException(status_code=401, detail="인증이 필요합니다.")
-            
+        if not request_state or not getattr(request_state, 'payload', None):
+            from fastapi.responses import JSONResponse
+            return JSONResponse(status_code=401, content={"detail": "인증 정보가 없습니다."})
+
+        request.state.user = request_state.payload.get('sub')
         return await call_next(request)
 
 KIWOOM_API_USE_PATH = [
@@ -50,6 +46,7 @@ KIWOOM_API_USE_PATH = [
     "/api/v1/accounts",
     "/api/v1/trade-logs/chart",
     '/api/v1/trade-logs/transaction',
+   
 ]
 
 class KiwoomOAuthMiddleware(BaseHTTPMiddleware):

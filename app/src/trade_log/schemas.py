@@ -1,6 +1,8 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from datetime import date
+from app.src.trade_log.ai.schemas import AIAnalysisResponse
+
 
 class TradeSummarySchema(BaseModel):
     total_buy_amount: int
@@ -46,6 +48,7 @@ class TradeLogCreateSchema(BaseModel):
 
 class TradeLogSchemaWithStockName(TradeLogCreateSchema):
     charts: List[ChartSchemaWithStockName]
+    ai_result: Optional[AIAnalysisResponse] = None
 
 class TradeLogResponseSchema(BaseModel):
     message: str
