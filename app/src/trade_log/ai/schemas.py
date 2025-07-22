@@ -10,3 +10,7 @@ class AIAnalysisResponse(BaseModel):
     trade_log_id: int
     result: str
     links: Optional[List[AILinkSchema]] = None
+
+class AIAnalysisResponseSchema(BaseModel):
+    message: str
+    data : AIAnalysisResponse
