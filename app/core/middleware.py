@@ -8,6 +8,7 @@ from app.database.core import get_db
 from app.src.account.services import AccountService
 from app.core.oauth_token import get_oauth_token
 import logging
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +62,6 @@ class KiwoomOAuthMiddleware(BaseHTTPMiddleware):
         self.expires_dt = ""
 
     async def dispatch(self, request: Request, call_next):
-        # OAuth 토큰이 필요한 경로들
         token_required_paths = [
             "/api/v1/home/",
             "/api/v1/trade-logs/",
@@ -77,7 +77,6 @@ class KiwoomOAuthMiddleware(BaseHTTPMiddleware):
         if any(request.url.path.startswith(path) for path in token_required_paths) or "/set-primary" in request.url.path:
             user_id = getattr(request.state, 'user', None)
             if not user_id:
-                # OAuth 토큰 없이도 접근 가능하도록 설정
                 request.state.token = None
                 return await call_next(request)
 
@@ -87,21 +86,34 @@ class KiwoomOAuthMiddleware(BaseHTTPMiddleware):
                 account_service = AccountService(db)
                 primary_account = account_service.get_primary_account(user_id)
 
-            
-                if not primary_account.token:
-                    logger.debug(f"No token found for primary account. Fetching new token for user {user_id}.")
+                # 토큰 만료일 확인 및 갱신
+                if primary_account.token and datetime.strptime(primary_account.expires_dt, '%Y%m%d%H%M%S') < datetime.now():
+                    logger.debug(f"토큰 만료됨. 새로운 토큰을 발급합니다.")
                     token_data = await get_oauth_token(user_id)
                     if not token_data:
-                        logger.error(f"Failed to retrieve OAuth token for user {user_id}.")
-                        return await call_next(request)  # 토큰 없이도 진행
+                        logger.error(f"OAuth 토큰 발급 실패: user_id={user_id}")
+                        return await call_next(request)
 
-                    logger.debug(f"Token data received: {token_data}")
+                    # 새로운 토큰과 만료일로 업데이트
                     primary_account.token = token_data["token"]
                     primary_account.expires_dt = token_data["expires_dt"]
-                    logger.debug(f"Updating primary_account with token: {primary_account.token}, expires_dt: {primary_account.expires_dt}")
                     db.commit()
                     db.refresh(primary_account)
-                    logger.debug(f"Primary account after update: token={primary_account.token}, expires_dt={primary_account.expires_dt}")
+                    logger.debug(f"새로운 토큰이 DB에 업데이트되었습니다: {primary_account.token}")
+
+                # 만약 토큰이 없으면 새로 발급
+                elif not primary_account.token:
+                    logger.debug(f"대표 계좌에 토큰이 없습니다. 새로 발급합니다.")
+                    token_data = await get_oauth_token(user_id)
+                    if not token_data:
+                        logger.error(f"OAuth 토큰 발급 실패: user_id={user_id}")
+                        return await call_next(request)
+
+                    primary_account.token = token_data["token"]
+                    primary_account.expires_dt = token_data["expires_dt"]
+                    db.commit()
+                    db.refresh(primary_account)
+                    logger.debug(f"새로운 토큰이 DB에 저장되었습니다: {primary_account.token}")
 
                 # 토큰 설정
                 request.state.token = primary_account.token
@@ -110,8 +122,7 @@ class KiwoomOAuthMiddleware(BaseHTTPMiddleware):
 
             except Exception as e:
                 logger.error(f"Failed to fetch or update token for user {user_id}: {e}")
-                return await call_next(request)  # 토큰 없이도 진행
-
+                return await call_next(request)
 
         response = await call_next(request)
         return response
