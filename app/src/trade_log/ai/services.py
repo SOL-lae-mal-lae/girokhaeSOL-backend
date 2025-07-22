@@ -1,14 +1,52 @@
+from app.logging import log_info
 from .repository import AIRepository
 from .schemas import AIAnalysisResponse, AILinkSchema
-from openai import OpenAI
 from dotenv import load_dotenv
 import os
 from sqlalchemy.orm import Session
+import requests
 
 load_dotenv()
 
 API_KEY = os.getenv("PERPLEXITY_API_KEY", "")
-BASE_URL = "https://api.perplexity.ai"
+BASE_URL = "https://api.perplexity.ai/chat/completions"
+
+def get_perplexity_analysis(payload):
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json",
+    }
+
+    try:
+        response = requests.post(BASE_URL,  json=payload, headers=headers)
+        log_info(f"API 응답 상태 코드: {response.status_code}")
+        
+        if response.status_code != 200:
+            log_info(f"API 호출 실패: {response.text}")
+            return None, []
+            
+        data = response.json()
+        log_info(f"API 응답 데이터: {data}")
+
+        result_text = data["choices"][0]["message"]["content"]
+
+        # 출처 링크 추출 (citations 활용)
+        citations = data.get("citations", [])
+        links = []
+        if citations:
+            for idx, url in enumerate(citations):
+                if url:
+                    links.append({
+                        "news_link": url,
+                        "sequence": idx + 1
+                    })
+
+        return result_text, links
+        
+    except Exception as e:
+        log_info(f"API 호출 중 예외 발생: {str(e)}")
+        return None, []
+
 
 def analyze_trade_log(db: Session, trade_log_id: int) -> AIAnalysisResponse:
     repo = AIRepository(db)
@@ -52,8 +90,9 @@ def analyze_trade_log(db: Session, trade_log_id: int) -> AIAnalysisResponse:
 
     system_prompt = (
         "당신은 투자 전략 분석가 AI입니다.\n\n"
-        "사용자가 입력한 매매일지를 분석하여, 다음 조건에 따라 평가와 피드백을 한글로 제공해 주세요.\n\n"
+        "사용자가 입력한 매매일지를 분석하여, 다음 조건에 따라 평가와 피드백을 반드시 한글로 제공해 주세요.\n\n"
         "또한, 매매 당시 해당 종목의 재무제표, 실적 발표, 관련 뉴스, 그리고 시장 지수(KOSPI, 나스닥 등)나 업종 흐름을 검색하여 참고한 뒤, 가능한 경우 이를 분석에 반영해 주세요.\n\n"
+        "감정 평가 시 영어로 된 감정을 제시해주는 한글로 대치해서 결과에 반영해 주세요. fear: 공포, impulse: 충동, anxiety: 불안, confidence: 확신, serenity: 무념무상\n\n"
         "---\n\n"
         "분석 항목 (총 100점 만점 기준 채점):\n\n"
         "1. **요약 평가**\n"
@@ -80,27 +119,15 @@ def analyze_trade_log(db: Session, trade_log_id: int) -> AIAnalysisResponse:
     )
 
     # 4. GPT 호출
-    client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
-    response = client.chat.completions.create(
-        model="sonar-pro",
-        messages=[
+    payload = {
+        "model":"sonar-pro",
+        "messages" :[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": prompt}
         ],
-        max_tokens=2500,
-    )
-    result_text = response.choices[0].message.content
-
-    # 출처 링크 추출 (citations 활용)
-    citations = getattr(response, "citations", None)
-    links = []
-    if citations:
-        for idx, url in enumerate(citations):
-            if url:
-                links.append({
-                    "news_link": url,
-                    "sequence": idx + 1
-                })
+        "max_tokens":2500,
+    }
+    result_text, links = get_perplexity_analysis(payload)
 
     # 5. DB 저장
     ai_analysis_id = repo.save_ai_analysis(trade_log_id, result_text)
@@ -109,10 +136,19 @@ def analyze_trade_log(db: Session, trade_log_id: int) -> AIAnalysisResponse:
     if links:
         repo.save_ai_links(ai_analysis_id, links)
 
+    # DB에서 다시 읽어오기
+    db_links = repo.get_ai_links_by_analysis_id(ai_analysis_id)
+    db.commit()
     # 7. 응답
     return AIAnalysisResponse(
         id=ai_analysis_id,
         trade_log_id=trade_log_id,
         result=result_text,
-        links=[AILinkSchema(**link) for link in links] if links else None
+        links=[AILinkSchema(news_link=l.news_link, sequence=l.sequence) for l in db_links] if db_links else None
     )
+
+def get_trade_log_by_date(db :Session, user_id: str,date: str):
+    repo = AIRepository(db)
+    result = repo.get_trade_log_by_date(user_id, date)
+
+    return result.id if result else None

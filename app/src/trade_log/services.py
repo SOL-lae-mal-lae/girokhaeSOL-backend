@@ -19,11 +19,17 @@ def analyze_trade_log(db: Session, trade_log_id: int):
 
     if exist:
         links = repo.get_ai_links_by_analysis_id(exist.id)
+        parsed_links = []
+        for link in links:
+            parsed_links.append({
+                "sequence": link.sequence,
+                "news_link": link.news_link,
+            })
         return {
             "id": exist.id,
             "trade_log_id": exist.trade_log_id,
             "result": exist.result,
-            "links": links
+            "links": parsed_links
         }
     return None
 
@@ -88,7 +94,7 @@ def get_trade_log_service_by_date(date: str, user_id: str, db: Session):
         news_links = db.query(NewsLink).filter(NewsLink.trade_log_id == trade_log_id).all()
         # 6. AI 분석 결과 조회
         ai_analysis = analyze_trade_log(db, trade_log_id)
-
+        log_info(ai_analysis)
         # 결과 데이터 구성
         result = {
             "date": trade_log.date,

@@ -19,6 +19,9 @@ class AIRepository:
     def get_trade_summary_by_log_id(self, trade_log_id: int):
         return self.db.query(TradeSummary).filter(TradeSummary.trade_log_id == trade_log_id).first()
 
+    def get_trade_log_by_date(self,user_id : str, date: str):
+        return self.db.query(TradeLog).filter(TradeLog.user_id == user_id).filter(TradeLog.date == date).first()
+
     def get_sentiments_by_trade_log_id(self, trade_log_id: int):
         return (
             self.db.query(Sentiment)
@@ -40,7 +43,7 @@ class AIRepository:
         return ai_analysis.id
 
     def get_ai_links_by_analysis_id(self, ai_analysis_id: int):
-        return self.db.query(AILink).filter(AILink.ai_analysis_id == ai_analysis_id).all()
+        return self.db.query(AILink).filter(AILink.ai_analysis_id == ai_analysis_id).order_by(AILink.sequence.asc()).all()
 
     def save_ai_links(self, ai_analysis_id: int, links: list[dict]):
         for link in links:
