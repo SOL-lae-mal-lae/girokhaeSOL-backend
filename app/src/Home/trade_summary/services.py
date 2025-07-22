@@ -11,8 +11,6 @@ import json
 class KiwoomAPIClient:
     """키움 API 클라이언트 - 인증은 auth 서비스 사용"""
 
-    
-
     def __init__(self):
         pass
 
@@ -110,4 +108,3 @@ class HomeService:
         except Exception as e:
             log_error(f"❌ HomeService 오류: {e}")
             return {"error": f"홈 요약 정보 처리 중 오류가 발생했습니다: {str(e)}"}
-    

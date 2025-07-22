@@ -52,7 +52,6 @@ async def get_oauth_token(user_id: str):
         api_keys = account_repo.get_api_keys_of_primary_account(user_id)
 
         log_info(f"🔍 DB에서 조회한 API 키: {api_keys}")
-        print(f"[DEBUG] DB에서 조회한 API 키: {api_keys}")
 
         if not api_keys:
             log_error(f'사용자의 대표 계좌 API 키를 찾을 수 없음: user_id={user_id}')
@@ -67,14 +66,9 @@ async def get_oauth_token(user_id: str):
         log_info(f"🔍 복호화된 키:")
         log_info(f"  - app_key: {decrypted_app_key}")
         log_info(f"  - secret_key: {decrypted_secret_key}")
-        print(f"[DEBUG] 복호화된 app_key: {decrypted_app_key}")
-        print(f"[DEBUG] 복호화된 secret_key: {decrypted_secret_key}")
+     
 
-        log_info(f"🔍 키움 API 호출 준비:")
-        log_info(f"  - app_key: {decrypted_app_key}")
-        log_info(f"  - secret_key: {decrypted_secret_key[:10]}...")  # 보안상 일부만 출력
-        print(f"[DEBUG] 키움 API 호출에 사용될 app_key: {decrypted_app_key}")
-        print(f"[DEBUG] 키움 API 호출에 사용될 secret_key: {decrypted_secret_key}")
+
 
         url = f'{settings.KIWOOM_BASE_URL}/oauth2/token'
         data = {
@@ -83,32 +77,27 @@ async def get_oauth_token(user_id: str):
             'secretkey': decrypted_secret_key,
         }
 
-        log_info(f"🔍 요청 URL: {url}")
+    
         log_info(f"🔍 요청 데이터: {data}")
-        print(f"[DEBUG] 요청 URL: {url}")
-        print(f"[DEBUG] 요청 데이터: {data}")
-
+     
         response = requests.post(url=url, headers=headers, json=data)
 
         log_info(f'OAuth 응답 상태 코드: {response.status_code}')
-        log_info(f'OAuth 응답 텍스트: {response.text}')
-        print(f"[DEBUG] OAuth 응답 상태 코드: {response.status_code}")
-        print(f"[DEBUG] OAuth 응답 텍스트: {response.text}")
-
+      
         if response.status_code != 200:
             log_error(f'OAuth API 호출 실패: 상태코드 {response.status_code}, 응답: {response.text}')
             return None
 
         response_data = response.json()
         log_info(f'OAuth 응답 JSON: {response_data}')
-        print(f"[DEBUG] OAuth 응답 JSON: {response_data}")
+     
 
         expires_dt = response_data.get('expires_dt')
         token_type = response_data.get('token_type')
         token = response_data.get('token')
 
         log_info(f'token_type: {token_type}, expires_dt: {expires_dt} token: {token}')
-        print(f"[DEBUG] token_type: {token_type}, expires_dt: {expires_dt} token: {token}")
+   
 
         if not token_type or not token:
             log_error(f'토큰 정보가 불완전함: token_type={token_type}, token={token}')
@@ -117,7 +106,6 @@ async def get_oauth_token(user_id: str):
         return {"token": f'{token_type} {token}', "expires_dt": expires_dt}
     except Exception as e:
         log_error(f'oauth token 발급 오류 : {str(e)}')
-        print(f"[DEBUG] oauth token 발급 오류 : {str(e)}")
         return None
     finally:
         if 'db' in locals():

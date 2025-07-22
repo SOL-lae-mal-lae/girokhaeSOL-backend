@@ -104,24 +104,7 @@ class AccountService:
 
 
     
-    def get_primary_account(self, user_id: str):
-        """사용자의 주계좌(활성 계좌) 조회"""
-        try:
-            return self.repository.get_primary_account_by_user_id(user_id)
-        except Exception as e:
-            log_error(f"get_primary_account 실패: {e}")
-            return None
-    
-    def set_primary_account(self, user_id: str, account_id: int):
-        """계좌를 주계좌로 설정"""
-        try:
-            # 먼저 모든 계좌의 is_primary를 False로 설정
-            self.repository.clear_all_primary_accounts(user_id)
-            # 선택된 계좌를 주계좌로 설정
-            return self.repository.set_account_as_primary(account_id, user_id)
-        except Exception as e:
-            log_error(f"set_primary_account 실패: {e}")
-            raise HTTPException(status_code=400, detail="주계좌 설정에 실패했습니다.")
+
 
 
 

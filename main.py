@@ -7,7 +7,6 @@ from app.src.trade_log.financial_statements.routes import router as financial_st
 from app.src.Home.trade_summary.routes import router as home_router
 from app.logging import log_info
 from app.core.middleware import JWTMiddleware, KiwoomOAuthMiddleware
-from app.core.account_token_middleware import AccountTokenMiddleware
 from app.src.stock_search.routes import router as stock_search_router
 from app.src.trade_log.chart.routes import router as chart_router
 from app.src.trade_log.routes import router as trade_log_post_router
@@ -134,7 +133,7 @@ EXCLUDE_PATH_PREFIXES = []
 
 
 # 미들웨어 등록 (역순으로 실행되므로 의존성이 있는 미들웨어를 나중에 등록)
-app.add_middleware(AccountTokenMiddleware)
+
 app.add_middleware(KiwoomOAuthMiddleware)
 app.add_middleware(JWTMiddleware)
 # 라우터 등록
