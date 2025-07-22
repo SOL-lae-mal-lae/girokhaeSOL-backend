@@ -114,8 +114,12 @@ def analyze_trade_log(db: Session, trade_log_id: int) -> AIAnalysisResponse:
         "기업 정보 평가 (35점): 실적·뉴스 언급 없음 -10, 재무지표 부재 -5, 업종 비교 없음 -3\n"  
         "감정 개입 (20점): 조급함 -5, 후회 표현 -3, 전략 대신 감정 주도 -5\n"
         "각 항목별 분석에 따라 이 기준을 바탕으로 정수 점수를 산출하세요.\n"
-        "가장 상단에 아래 형식으로 각 항목별 점수를 1줄에 반환하세요.\n"  
-        "45@35@20@" 
+        "답변 시, 어떻게 점수를 계산했는지 알리지 말고 각 문항의 점수만 알려주세요.\n"
+        "답변 시, 각 평가 요소를 'SEPARATOR'라는 단어로 나누고, 평가 요소와 평가 요소에 대한 답변 'SPLIT'이라는 단어로 나눠주세요. 각 영문자는 모두 대문자입니다.\n"
+        "답변 시, 가장 상단에 아래 형식으로 각 항목별 점수를 1줄에 반환하세요.\n"  
+        "45@35@20@"
+        "답변 형식은 아래 형태를 참고하세요.\n"
+        "45@35@20@1. **요약 평가**SPLIT1번 문항에 대한 답변SEPARATOR2. **전략평가**SPLIT2번 평가요소에 대한답변SEPARATOR3. ..."
     )
 
     # 4. GPT 호출
@@ -138,7 +142,7 @@ def analyze_trade_log(db: Session, trade_log_id: int) -> AIAnalysisResponse:
 
     # DB에서 다시 읽어오기
     db_links = repo.get_ai_links_by_analysis_id(ai_analysis_id)
-    db.commit()
+
     # 7. 응답
     return AIAnalysisResponse(
         id=ai_analysis_id,
