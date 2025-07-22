@@ -27,8 +27,12 @@ class Settings(BaseSettings):
 
     KIWOOM_BASE_URL: str
 
+
     ENCRYPTION_KEY: str
-    
+
+    SCHEDULER_APP_KEY: str
+    SCHEDULER_SECRET_KEY: str
+
     class Config:
         env_file = ".env"
 
