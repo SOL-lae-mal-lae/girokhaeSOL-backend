@@ -110,3 +110,34 @@ async def get_oauth_token(user_id: str):
     finally:
         if 'db' in locals():
             db.close()
+
+async def register_account(user_id: str, app_key: str, secret_key: str):
+    """계좌 등록 및 토큰 발급 후 DB 저장"""
+    try:
+        log_info(f"🔍 계좌 등록 시작 - user_id: {user_id}")
+
+        db = next(get_db())
+        account_repo = AccountRepository(db)
+
+        # 계좌 정보 저장
+        account_repo.save_account(user_id, app_key, secret_key)
+        log_info(f"🔍 계좌 정보 저장 완료 - user_id: {user_id}")
+
+        # 토큰 발급
+        token_data = await get_oauth_token(user_id)
+
+        if not token_data:
+            log_error(f"🔍 토큰 발급 실패 - user_id: {user_id}")
+            return None
+
+        # 발급된 토큰 DB 저장
+        account_repo.update_token(user_id, token_data['token'], token_data['expires_dt'])
+        log_info(f"🔍 토큰 저장 완료 - user_id: {user_id}")
+
+        return token_data
+    except Exception as e:
+        log_error(f"계좌 등록 중 오류 발생: {e}")
+        return None
+    finally:
+        if 'db' in locals():
+            db.close()
