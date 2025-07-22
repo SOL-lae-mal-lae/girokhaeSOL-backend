@@ -7,8 +7,9 @@ from app.core.oauth_token import get_oauth_token
 from app.database.core import get_db
 from app.src.account.services import AccountService
 from app.core.oauth_token import get_oauth_token
-import logging
+from app.logging import log_debug
 from datetime import datetime
+import logging
 
 logger = logging.getLogger(__name__)
 
@@ -47,19 +48,10 @@ class JWTMiddleware(BaseHTTPMiddleware):
         request.state.user = request_state.payload.get('sub')
         return await call_next(request)
 
-KIWOOM_API_USE_PATH = [
-    "/api/v1/home/summary",  
-    "/api/v1/accounts",
-    "/api/v1/trade-logs/chart",
-    '/api/v1/trade-logs/transaction',
-   
-]
 
 class KiwoomOAuthMiddleware(BaseHTTPMiddleware):
     def __init__(self, app):
         super().__init__(app)
-        self.token = ""
-        self.expires_dt = ""
 
     async def dispatch(self, request: Request, call_next):
         token_required_paths = [
@@ -85,7 +77,8 @@ class KiwoomOAuthMiddleware(BaseHTTPMiddleware):
                 db = next(get_db())
                 account_service = AccountService(db)
                 primary_account = account_service.get_primary_account(user_id)
-
+                log_debug(primary_account.token)
+                log_debug(primary_account.expires_dt)
                 # 토큰 만료일 확인 및 갱신
                 if primary_account.token and datetime.strptime(primary_account.expires_dt, '%Y%m%d%H%M%S') < datetime.now():
                     logger.debug(f"토큰 만료됨. 새로운 토큰을 발급합니다.")
@@ -95,8 +88,8 @@ class KiwoomOAuthMiddleware(BaseHTTPMiddleware):
                         return await call_next(request)
 
                     # 새로운 토큰과 만료일로 업데이트
-                    primary_account.token = token_data["token"]
-                    primary_account.expires_dt = token_data["expires_dt"]
+                    primary_account.token = token_data.token                    
+                    primary_account.expires_dt = token_data.expires_dt
                     db.commit()
                     db.refresh(primary_account)
                     logger.debug(f"새로운 토큰이 DB에 업데이트되었습니다: {primary_account.token}")
@@ -109,15 +102,14 @@ class KiwoomOAuthMiddleware(BaseHTTPMiddleware):
                         logger.error(f"OAuth 토큰 발급 실패: user_id={user_id}")
                         return await call_next(request)
 
-                    primary_account.token = token_data["token"]
-                    primary_account.expires_dt = token_data["expires_dt"]
+                    primary_account.token = token_data.token
+                    primary_account.expires_dt = token_data.expires_dt
                     db.commit()
                     db.refresh(primary_account)
                     logger.debug(f"새로운 토큰이 DB에 저장되었습니다: {primary_account.token}")
 
                 # 토큰 설정
-                request.state.token = primary_account.token
-                self.expires_dt = primary_account.expires_dt
+                request.state.token = primary_account.token  # 요청에 토큰을 설정
                 logger.debug(f"Middleware token set: token={self.token}, expires_dt={self.expires_dt}")
 
             except Exception as e:
