@@ -16,7 +16,10 @@ def get_ai_analysis(trade_log_id: int, db: Session = Depends(get_db)):
         # 여기서 commit을 해줍니다.
         db.commit()
         
-        return result
+        return {
+            "message": 'success',
+            "data": result
+        }
     except Exception as e:
         # 에러 발생 시 rollback
         db.rollback()
