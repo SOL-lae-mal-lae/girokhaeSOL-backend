@@ -3,7 +3,6 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from app.core.config import settings
 from  app.core.clerk import sdk
 from clerk_backend_api.security.types import AuthenticateRequestOptions
-from datetime import datetime
 from app.core.oauth_token import get_oauth_token
 from app.database.core import get_db
 from app.src.account.services import AccountService
@@ -78,43 +77,41 @@ class KiwoomOAuthMiddleware(BaseHTTPMiddleware):
         if any(request.url.path.startswith(path) for path in token_required_paths) or "/set-primary" in request.url.path:
             user_id = getattr(request.state, 'user', None)
             if not user_id:
+                # OAuth 토큰 없이도 접근 가능하도록 설정
                 request.state.token = None
                 return await call_next(request)
 
-            # ✅ 대표 계좌 변경 시엔 무조건 재발급
-            force_refresh = "/set-primary" in request.url.path
+            # ✅ 데이터베이스에서 is_primary=1인 계좌의 토큰 조회
+            try:
+                db = next(get_db())
+                account_service = AccountService(db)
+                primary_account = account_service.get_primary_account(user_id)
 
-            # 토큰 갱신 여부 판단
-            if force_refresh or not self.token or datetime.strptime(self.expires_dt, '%Y%m%d%H%M%S') < datetime.now():
-                try:
-                    # get_oauth_token 함수 호출
+            
+                if not primary_account.token:
+                    logger.debug(f"No token found for primary account. Fetching new token for user {user_id}.")
                     token_data = await get_oauth_token(user_id)
                     if not token_data:
-                        raise HTTPException(status_code=401, detail="Failed to retrieve OAuth token")
+                        logger.error(f"Failed to retrieve OAuth token for user {user_id}.")
+                        return await call_next(request)  # 토큰 없이도 진행
 
-                    # 토큰 갱신 후 request state에 저장
-                    self.token = token_data["token"]
-                    self.expires_dt = token_data["expires_dt"]
-                    request.state.token = self.token
+                    logger.debug(f"Token data received: {token_data}")
+                    primary_account.token = token_data["token"]
+                    primary_account.expires_dt = token_data["expires_dt"]
+                    logger.debug(f"Updating primary_account with token: {primary_account.token}, expires_dt: {primary_account.expires_dt}")
+                    db.commit()
+                    db.refresh(primary_account)
+                    logger.debug(f"Primary account after update: token={primary_account.token}, expires_dt={primary_account.expires_dt}")
 
-                    # 활성 계좌 정보도 함께 저장
-                    db = next(get_db())
-                    account_service = AccountService(db)
-                    primary_account = account_service.get_primary_account(user_id)
-                    if not primary_account:
-                        logger.warning(f"No primary account found for user {user_id}")
-                        return await call_next(request)
+                # 토큰 설정
+                request.state.token = primary_account.token
+                self.expires_dt = primary_account.expires_dt
+                logger.debug(f"Middleware token set: token={self.token}, expires_dt={self.expires_dt}")
 
-                    request.state.active_account = primary_account
+            except Exception as e:
+                logger.error(f"Failed to fetch or update token for user {user_id}: {e}")
+                return await call_next(request)  # 토큰 없이도 진행
 
-                except Exception as e:
-                    logger.error(f"OAuth token refresh failed for user {user_id}: {e}")
-                    raise HTTPException(status_code=401, detail="OAuth token refresh failed")
 
-            else:
-                # 만약 토큰이 유효하다면 기존 토큰 사용
-                request.state.token = self.token
-
-        # 최종 응답 반환
         response = await call_next(request)
         return response

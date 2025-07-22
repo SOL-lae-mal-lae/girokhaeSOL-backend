@@ -11,4 +11,6 @@ class Account(Base):
     app_key = Column(String(255), nullable=False)  # 외부 API 인증을 위한 app_key
     secret_key = Column(String(255), nullable=False)  # 외부 API 인증을 위한 secret_key
     is_primary = Column(Boolean, default=False, nullable=False)
+    token = Column(String(512), nullable=True)  # OAuth 토큰
+    expires_dt = Column(String(20), nullable=True)  # 토큰 만료 시간
 

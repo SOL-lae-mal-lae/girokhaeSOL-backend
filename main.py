@@ -11,6 +11,7 @@ from app.src.stock_search.routes import router as stock_search_router
 from app.src.trade_log.chart.routes import router as chart_router
 from app.src.trade_log.routes import router as trade_log_post_router
 from app.src.trade_log.ai.routes import router as ai_analysis_router
+import logging
 
 # 모든 모델 import (테이블 생성을 위해)
 from app.src.common_models.users.model import User
@@ -108,6 +109,7 @@ scheduler = BackgroundScheduler(timezone="Asia/Seoul")
 scheduler.add_job(run_stock_info_job, 'cron', day=21, hour=17, minute=12)
 scheduler.start()
 
+logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 # FastAPI 앱 생성
 app = FastAPI(
     title=settings.PROJECT_NAME,
