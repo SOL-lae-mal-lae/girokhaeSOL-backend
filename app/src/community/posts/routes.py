@@ -39,7 +39,6 @@ def create_post(
     db: Session = Depends(get_db)
 ):
     try:
-        #user_id = "user_2zceSsp2uVsMkLuh8AftIRulD4F"  # 임시 사용자 ID
         user_id = getattr(request.state, "user", None)
 
         # trade_log_id가 0이면 None으로 처리
@@ -97,7 +96,6 @@ def update_post(
 ):
     try:
         # 사용자 ID 가져오기
-        #user_id = "user_2zceSsp2uVsMkLuh8AftIRulD4F"
         user_id = getattr(http_request.state, "user", None)
         # if not user_id:
         #     raise HTTPException(status_code=401, detail="인증이 필요합니다.")
@@ -140,7 +138,6 @@ def delete_post(
 ):
     try:
         # 사용자 ID 가져오기
-        #user_id = "user_2zceSsp2uVsMkLuh8AftIRulD4F"
         user_id = getattr(request.state, "user", None)
         # if not user_id:
         #     raise HTTPException(status_code=401, detail="인증이 필요합니다.")
