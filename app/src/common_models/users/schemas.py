@@ -15,3 +15,10 @@ class UserResponse(UserBase):
     
     class Config:
         from_attributes = True
+
+class BaseResponse(BaseModel):
+    message: str
+    data: Optional[dict]
+
+    class Config:
+        orm_mode = True

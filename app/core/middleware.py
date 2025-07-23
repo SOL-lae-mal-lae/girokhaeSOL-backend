@@ -80,6 +80,7 @@ class KiwoomOAuthMiddleware(BaseHTTPMiddleware):
                 log_debug(primary_account.token)
                 log_debug(primary_account.expires_dt)
                 # 토큰 만료일 확인 및 갱신
+                log_debug(datetime.now())
                 if primary_account.token and primary_account.expires_dt < datetime.now():
                     logger.debug(f"토큰 만료됨. 새로운 토큰을 발급합니다.")
                     token_data = await get_oauth_token(user_id)
