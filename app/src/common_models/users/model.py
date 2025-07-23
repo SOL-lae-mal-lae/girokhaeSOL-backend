@@ -1,15 +1,14 @@
-from sqlalchemy import Integer, String
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import Column, Integer, String
 from app.database.core import Base
-from typing import List
-from app.src.my_page.posts.models import Post
-from app.src.my_page.comments.models import Comment
 
 class User(Base):
+    """
+    사용자 모델
+    """
     __tablename__ = "users"
-    
-    id: Mapped[str] = mapped_column(String(50), primary_key=True, index=True)
-    nickname: Mapped[str] = mapped_column(String(25))
-    age: Mapped[int] = mapped_column(Integer)
-    gender: Mapped[str] = mapped_column(String(10))  # ex: 'male', 'female'
+
+    id = Column(String(50), primary_key=True, index=True, comment="사용자 ID")
+    nickname = Column(String(25), nullable=True, comment="사용자 닉네임")
+    age = Column(Integer, nullable=True, comment="사용자 나이")
+    gender = Column(String(10), nullable=True, comment="사용자 성별 (male, female)")
 
