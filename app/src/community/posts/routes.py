@@ -26,6 +26,44 @@ def get_all_posts(
         print(f"Error getting all posts: {str(e)}")
         raise HTTPException(status_code=400, detail=f"오류가 발생했습니다: {str(e)}")
 
+@router.get(
+    "/general",
+    response_model=PostListResponseWrapper,
+    responses={
+        200: {"model": PostListResponseWrapper, "description": "일반글 조회 완료"},
+        400: {"model": ErrorResponse, "description": "오류가 발생했습니다."}
+    }
+)
+def get_general_posts(
+    db: Session = Depends(get_db)
+):
+    try:
+        service = PostService(db)
+        result = service.get_general_posts()
+        return {"message": "일반글 조회 완료", "data": result}
+    except Exception as e:
+        print(f"Error getting general posts: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"오류가 발생했습니다: {str(e)}")
+
+@router.get(
+    "/trade-log",
+    response_model=PostListResponseWrapper,
+    responses={
+        200: {"model": PostListResponseWrapper, "description": "매매일지글 조회 완료"},
+        400: {"model": ErrorResponse, "description": "오류가 발생했습니다."}
+    }
+)
+def get_trade_log_posts(
+    db: Session = Depends(get_db)
+):
+    try:
+        service = PostService(db)
+        result = service.get_trade_log_posts()
+        return {"message": "매매일지글 조회 완료", "data": result}
+    except Exception as e:
+        print(f"Error getting trade_log posts: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"오류가 발생했습니다: {str(e)}")
+
 @router.post(
     "",
     response_model=PostCreateResponse,

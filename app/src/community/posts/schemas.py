@@ -34,6 +34,7 @@ class PostListResponse(BaseModel):
     created_at: datetime
     title: str
     content: str
+    comment_count: int
 
 class PostCreateResponse(BaseModel):
     message: str
