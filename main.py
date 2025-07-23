@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request, Response
 from app.core.config import settings
 from app.database.core import engine, Base
 from app.src.account.routes import router as account_router
+from app.src.trade_log.financial_statements.repository import FinancialStatementRepository
 from app.src.trade_log.month_trade_log.routes import router as trade_log_router
 from app.src.trade_log.financial_statements.routes import router as financial_statements_router
 from app.src.Home.trade_summary.routes import router as home_router
@@ -131,7 +132,7 @@ app.add_middleware(
 )
 
 # 테이블 생성
-Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine, checkfirst=True)
 
 # 리턴 시 예외처리 하고픈 부분이 있다면 아래에 넣어주세요~
 EXCLUDE_PATH_PREFIXES = []
