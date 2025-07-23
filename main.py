@@ -12,17 +12,14 @@ from app.src.trade_log.chart.routes import router as chart_router
 from app.src.trade_log.routes import router as trade_log_post_router
 from app.src.trade_log.ai.routes import router as ai_analysis_router
 from app.src.my_page.user.router import router as user_router
-from app.src.my_page.comments.router import router as comments_router
-from app.src.my_page.posts.router import router as posts_router
+from app.src.my_page.comments.router import router as my_page_comments_router
+from app.src.my_page.posts.router import router as my_page_posts_router
 from app.src.community.posts.routes import router as posts_router
 from app.src.community.comments.routes import router as comments_router
+from app.src.common_models.users.model import User
 import logging
 
-# 모든 모델 import (테이블 생성을 위해)
-from app.src.common_models.users.model import User
 from app.src.account.model import Account
-# from app.src.financial_statements.model import FinancialStatement  # 임시 주석
-from app.src.trade_log.financial_statements.repository import FinancialStatementRepository
 from app.src.community.posts.model import Post
 from app.src.community.comments.model import Comment
 
@@ -155,8 +152,8 @@ app.include_router(chart_router, prefix="/api/v1/trade-logs", tags=["trade_logs"
 app.include_router(trade_log_post_router, prefix="/api/v1/trade-logs", tags=["trade_logs"])
 app.include_router(ai_analysis_router, prefix="/api/v1/trade-logs/ai", tags=["trade_logs"])
 app.include_router(user_router, prefix="/api/v1/my-page", tags=["my_page_user"])
-app.include_router(comments_router, prefix="/api/v1/my-page", tags=["my_page_comments"])
-app.include_router(posts_router, prefix="/api/v1/my-page", tags=["my_page_posts"])
+app.include_router(my_page_comments_router, prefix="/api/v1/my-page", tags=["my_page_comments"])
+app.include_router(my_page_posts_router, prefix="/api/v1/my-page", tags=["my_page_posts"])
 app.include_router(posts_router, prefix="/api/v1/community", tags=["community"])
 app.include_router(comments_router, prefix="/api/v1/community", tags=["community"])
 

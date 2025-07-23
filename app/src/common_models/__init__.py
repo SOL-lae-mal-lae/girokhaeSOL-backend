@@ -1,1 +1,3 @@
-from app.src.common_models.users.model import User
+from .users.model import User
+
+__all__ = ["User"]

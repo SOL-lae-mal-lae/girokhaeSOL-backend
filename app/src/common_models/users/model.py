@@ -13,5 +13,3 @@ class User(Base):
     age: Mapped[int] = mapped_column(Integer)
     gender: Mapped[str] = mapped_column(String(10))  # ex: 'male', 'female'
 
-    posts: Mapped[List["Post"]] = relationship("Post", back_populates="user")
-    comments: Mapped[List["Comment"]] = relationship("Comment", back_populates="user")
