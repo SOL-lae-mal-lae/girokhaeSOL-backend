@@ -38,3 +38,6 @@ class CommentRepository:
         self.db.commit()
         self.db.refresh(comment)
         return comment
+
+    def get_comment_by_id(self, comment_id: int) -> Optional[Comment]:
+        return self.db.query(Comment).filter(Comment.id == comment_id).first()

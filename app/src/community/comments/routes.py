@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from app.database.core import get_db
 from .schemas import CommentCreateRequest, CommentUpdateRequest, CommentCreateResponse, CommentListResponseWrapper, CommentDeleteResponse, CommentUpdateResponse, ErrorResponse
@@ -62,10 +62,22 @@ def get_comments(
 def delete_comment(
     post_id: int,
     comment_id: int,
+    request: Request,
     db: Session = Depends(get_db)
 ):
     try:
+        # 사용자 ID 가져오기
+        #user_id = "user_2zceSsp2uVsMkLuh8AftIRulD4F"
+        user_id = getattr(request.state, "user", None)
+        # if not user_id:
+        #     raise HTTPException(status_code=401, detail="인증이 필요합니다.")
+
         service = CommentService(db)
+        
+        # 댓글 작성자 확인
+        if not service.check_comment_ownership(comment_id, user_id):
+            raise HTTPException(status_code=403, detail="댓글을 삭제할 권한이 없습니다.")
+        
         success = service.delete_comment(comment_id)
         
         if not success:
@@ -91,10 +103,22 @@ def update_comment(
     post_id: int,
     comment_id: int,
     request: CommentUpdateRequest,
+    http_request: Request,
     db: Session = Depends(get_db)
 ):
     try:
+        # 사용자 ID 가져오기
+        #user_id = "user_2zceSsp2uVsMkLuh8AftIRulD4F"
+        user_id = getattr(http_request.state, "user", None)
+        # if not user_id:
+        #     raise HTTPException(status_code=401, detail="인증이 필요합니다.")
+
         service = CommentService(db)
+        
+        # 댓글 작성자 확인
+        if not service.check_comment_ownership(comment_id, user_id):
+            raise HTTPException(status_code=403, detail="댓글을 수정할 권한이 없습니다.")
+        
         result = service.update_comment(comment_id, request)
         
         if not result:

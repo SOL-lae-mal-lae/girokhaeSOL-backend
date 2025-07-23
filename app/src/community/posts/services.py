@@ -81,3 +81,9 @@ class PostService:
 
     def delete_post(self, post_id: int) -> bool:
         return self.repo.delete_post(post_id)
+
+    def check_post_ownership(self, post_id: int, user_id: str) -> bool:
+        post = self.repo.get_post_by_id(post_id)
+        if not post:
+            return False
+        return post.user_id == user_id

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from app.database.core import SessionLocal
 from .schemas import PostCreateRequest, PostUpdateRequest, PostCreateResponse, PostDetailResponse, PostListResponseWrapper, PostDeleteResponse, ErrorResponse
@@ -92,14 +92,26 @@ def get_post(
 def update_post(
     post_id: int,
     request: PostUpdateRequest,
+    http_request: Request,
     db: Session = Depends(get_db)
 ):
     try:
+        # 사용자 ID 가져오기
+        #user_id = "user_2zceSsp2uVsMkLuh8AftIRulD4F"
+        user_id = getattr(http_request.state, "user", None)
+        # if not user_id:
+        #     raise HTTPException(status_code=401, detail="인증이 필요합니다.")
+
         # trade_log_id가 0이면 None으로 처리
         if request.trade_log_id == 0:
             request.trade_log_id = None
 
         service = PostService(db)
+        
+        # 게시글 작성자 확인
+        if not service.check_post_ownership(post_id, user_id):
+            raise HTTPException(status_code=403, detail="게시글을 수정할 권한이 없습니다.")
+        
         result = service.update_post(post_id, request)
         
         if not result:
@@ -123,10 +135,22 @@ def update_post(
 )
 def delete_post(
     post_id: int,
+    request: Request,
     db: Session = Depends(get_db)
 ):
     try:
+        # 사용자 ID 가져오기
+        #user_id = "user_2zceSsp2uVsMkLuh8AftIRulD4F"
+        user_id = getattr(request.state, "user", None)
+        # if not user_id:
+        #     raise HTTPException(status_code=401, detail="인증이 필요합니다.")
+
         service = PostService(db)
+        
+        # 게시글 작성자 확인
+        if not service.check_post_ownership(post_id, user_id):
+            raise HTTPException(status_code=403, detail="게시글을 삭제할 권한이 없습니다.")
+        
         success = service.delete_post(post_id)
         
         if not success:

@@ -48,3 +48,9 @@ class CommentService:
             content=updated_comment.content,
             created_at=updated_comment.created_at
         )
+
+    def check_comment_ownership(self, comment_id: int, user_id: str) -> bool:
+        comment = self.repo.get_comment_by_id(comment_id)
+        if not comment:
+            return False
+        return comment.user_id == user_id

@@ -39,3 +39,6 @@ class PostRepository:
         self.db.delete(post)
         self.db.commit()
         return True
+
+    def get_post_by_id(self, post_id: int) -> Optional[Post]:
+        return self.db.query(Post).filter(Post.id == post_id).first()
