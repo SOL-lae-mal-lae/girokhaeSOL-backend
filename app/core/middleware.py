@@ -17,11 +17,14 @@ EXCLUDE_PATHS = ["/docs",
                  "/openapi.json",
                  "/favicon.ico",
                  "/api/v1/auth",
+                #  "/api/v1/trade-logs",
+                #  "/api/v1/trade-logs/ai",
                  "/api/v1/trade-logs/search",
                  "/api/v1/trade-logs/statement/",
                  "/api/v1/recent-post",
-                 "/api/v1/community",
+                #  "/api/v1/community",
                  "/api/v1/financial-statements",
+                 "/api/v1/stock-search",
                  ]
 
 class JWTMiddleware(BaseHTTPMiddleware):
@@ -30,9 +33,9 @@ class JWTMiddleware(BaseHTTPMiddleware):
         # OPTIONS 요청 (CORS preflight)은 인증 제외
         if request.method == "OPTIONS":
             return await call_next(request)
-            
+
         # 인증 제외 경로라면 건너뛰기
-        if any(request.url.path.startswith(path) for path in EXCLUDE_PATHS):
+        if any([request.url.path.startswith(path) for path in EXCLUDE_PATHS]):
             return await call_next(request)
     
         request_state = sdk.authenticate_request(

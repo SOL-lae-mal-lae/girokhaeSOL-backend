@@ -11,6 +11,8 @@ from app.src.stock_search.routes import router as stock_search_router
 from app.src.trade_log.chart.routes import router as chart_router
 from app.src.trade_log.routes import router as trade_log_post_router
 from app.src.trade_log.ai.routes import router as ai_analysis_router
+from app.src.community.posts.routes import router as posts_router
+from app.src.community.comments.routes import router as comments_router
 import logging
 
 # 모든 모델 import (테이블 생성을 위해)
@@ -18,6 +20,8 @@ from app.src.common_models.users.model import User
 from app.src.account.model import Account
 # from app.src.financial_statements.model import FinancialStatement  # 임시 주석
 from app.src.trade_log.financial_statements.repository import FinancialStatementRepository
+from app.src.community.posts.model import Post
+from app.src.community.comments.model import Comment
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -147,6 +151,8 @@ app.include_router(stock_search_router, prefix="/api/v1/trade-logs", tags=["trad
 app.include_router(chart_router, prefix="/api/v1/trade-logs", tags=["trade_logs"])
 app.include_router(trade_log_post_router, prefix="/api/v1/trade-logs", tags=["trade_logs"])
 app.include_router(ai_analysis_router, prefix="/api/v1/trade-logs/ai", tags=["trade_logs"])
+app.include_router(posts_router, prefix="/api/v1/community", tags=["community"])
+app.include_router(comments_router, prefix="/api/v1/community", tags=["community"])
 
 @app.get("/api/v1/")
 def read_root():
