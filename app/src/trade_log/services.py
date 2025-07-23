@@ -6,6 +6,32 @@ from .model import TradeLog, TradeSummary, TradeDetail, Chart, NewsLink, TradeLo
 from .schemas import TradeLogResponseSchema, TradeSummarySchema, TradeDetailSchema, ChartSchema, NewsLinkSchema
 from ..stock_search.model import Stock
 from ...logging import log_info
+from .ai.repository import AIRepository
+from .ai.schemas import AIAnalysisResponse, AILinkSchema
+from dotenv import load_dotenv
+
+load_dotenv()
+
+def analyze_trade_log(db: Session, trade_log_id: int):
+    repo = AIRepository(db)
+    # 1. 기존 분석 결과 있으면 반환
+    exist = repo.get_ai_analysis_by_log_id(trade_log_id)
+
+    if exist:
+        links = repo.get_ai_links_by_analysis_id(exist.id)
+        parsed_links = []
+        for link in links:
+            parsed_links.append({
+                "sequence": link.sequence,
+                "news_link": link.news_link,
+            })
+        return {
+            "id": exist.id,
+            "trade_log_id": exist.trade_log_id,
+            "result": exist.result,
+            "links": parsed_links
+        }
+    return None
 
 
 def create_trade_log_service(user_id: str, body, db: Session):
@@ -64,7 +90,11 @@ def get_trade_log_service_by_date(date: str, user_id: str, db: Session):
         ).filter(
             TradeLogSentiment.trade_log_id == trade_log_id
         ).all()
-        
+
+        news_links = db.query(NewsLink).filter(NewsLink.trade_log_id == trade_log_id).all()
+        # 6. AI 분석 결과 조회
+        ai_analysis = analyze_trade_log(db, trade_log_id)
+        log_info(ai_analysis)
         # 결과 데이터 구성
         result = {
             "date": trade_log.date,
@@ -104,7 +134,8 @@ def get_trade_log_service_by_date(date: str, user_id: str, db: Session):
             "sentiments": [sentiment.name for sentiment in sentiments],
             "rationale": trade_log.rationale,
             "evaluation": trade_log.evaluation,
-            "news_links": []  # news_links는 현재 구현되지 않았으므로 빈 배열
+            "news_links": [{"url": news.url} for news in news_links] if news_links else [],
+            "ai_result": ai_analysis,
         }
         
         return result

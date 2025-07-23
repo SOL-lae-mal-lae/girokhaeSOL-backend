@@ -10,3 +10,7 @@ class StockSearchService:
     def search_stocks(self, stock_name: str) -> List[StockItem]:
         stocks = self.repo.search_stocks_by_name(stock_name)
         return [StockItem(stock_name=s.stock_name, stock_code=s.stock_code) for s in stocks]
+
+    def get_all_stocks(self) -> List[StockItem]:
+        stocks = self.repo.get_all_stocks()
+        return [StockItem(stock_name=s.stock_name, stock_code=s.stock_code) for s in stocks]

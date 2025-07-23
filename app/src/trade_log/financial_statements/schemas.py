@@ -11,11 +11,13 @@ class FinancialStatementResponse(BaseModel):
     stock_code: str
     pbr: Optional[float]
     per: Optional[float]
-    debt_ratio: Optional[float]
-    revenue: Optional[int]
-    operating_income: Optional[int]
-    net_income: Optional[int]
     eps: Optional[float]
+    roe: Optional[float]
+    mac: Optional[int]
+    sale_amt: Optional[int]
+    bus_pro: Optional[int]
+    cup_nga: Optional[int]
+    yyyymm: Optional[str]
     
     class Config:
         from_attributes = True

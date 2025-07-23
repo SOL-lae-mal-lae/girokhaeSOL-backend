@@ -174,7 +174,7 @@ cover/
 *.pot
 
 # Django stuff:
-*.log
+/logs
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
@@ -289,3 +289,5 @@ pyrightconfig.json
 
 .DS_Store
 # End of https://www.toptal.com/developers/gitignore/api/pycharm,python
+logs/
+log/
