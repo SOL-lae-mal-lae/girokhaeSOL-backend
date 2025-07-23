@@ -27,8 +27,10 @@ class PostResponse(BaseModel):
     is_public: bool
 
 class PostListResponse(BaseModel):
+    id: int
     post_type: bool
     user_id: str
+    nickname: str
     created_at: datetime
     title: str
     content: str
