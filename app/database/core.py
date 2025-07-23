@@ -1,12 +1,20 @@
-
+import os
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
-from app.core.config import settings
+
+load_dotenv()
+
+DB_USER = os.getenv("DB_USER","")
+DB_PASSWORD = os.getenv("DB_PASSWORD","")
+DB_HOST = os.getenv("DB_HOST","")
+DB_NAME = os.getenv("DB_NAME","")
+DB_PORT = os.getenv("DB_PORT",3306)
 
 # DB URL 구성
 SQLALCHEMY_DATABASE_URL = (
-    f"mysql+pymysql://{settings.DB_USER}:{settings.DB_PASSWORD}"
-    f"@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
+    f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}"
+    f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 )
 
 # Engine 생성
