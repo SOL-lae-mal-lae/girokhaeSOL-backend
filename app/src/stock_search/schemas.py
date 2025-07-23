@@ -12,5 +12,9 @@ class StockSearchResponse(BaseModel):
     message: str
     data: List[StockItem]
 
+class StockAllResponse(BaseModel):
+    message: str
+    data: List[StockItem]
+
 class ErrorResponse(BaseModel):
     detail: str

@@ -13,3 +13,6 @@ class StockRepository:
             .filter(Stock.stock_name.like(f"%{stock_name}%"))
             .all()
         )
+
+    def get_all_stocks(self) -> List[Stock]:
+        return self.db.query(Stock).order_by(Stock.stock_name.asc()).all()
