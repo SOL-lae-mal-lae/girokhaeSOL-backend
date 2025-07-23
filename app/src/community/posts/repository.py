@@ -1,6 +1,8 @@
 from sqlalchemy.orm import Session
 from .model import Post
 from app.src.common_models.users.model import User
+from app.src.community.comments.model import Comment
+from sqlalchemy import func
 from typing import Optional, List
 
 class PostRepository:
@@ -18,8 +20,44 @@ class PostRepository:
 
     def get_all_posts(self) -> List[tuple]:
         return (
-            self.db.query(Post, User.nickname)
+            self.db.query(
+                Post, 
+                User.nickname,
+                func.count(Comment.id).label('comment_count')
+            )
             .join(User, Post.user_id == User.id)
+            .outerjoin(Comment, Post.id == Comment.post_id)
+            .group_by(Post.id, User.nickname)
+            .order_by(Post.created_at.desc())
+            .all()
+        )
+
+    def get_general_posts(self) -> List[tuple]:
+        return (
+            self.db.query(
+                Post, 
+                User.nickname,
+                func.count(Comment.id).label('comment_count')
+            )
+            .join(User, Post.user_id == User.id)
+            .outerjoin(Comment, Post.id == Comment.post_id)
+            .filter(Post.post_type == True)
+            .group_by(Post.id, User.nickname)
+            .order_by(Post.created_at.desc())
+            .all()
+        )
+
+    def get_trade_log_posts(self) -> List[tuple]:
+        return (
+            self.db.query(
+                Post, 
+                User.nickname,
+                func.count(Comment.id).label('comment_count')
+            )
+            .join(User, Post.user_id == User.id)
+            .outerjoin(Comment, Post.id == Comment.post_id)
+            .filter(Post.post_type == False)
+            .group_by(Post.id, User.nickname)
             .order_by(Post.created_at.desc())
             .all()
         )
@@ -45,6 +83,3 @@ class PostRepository:
         self.db.delete(post)
         self.db.commit()
         return True
-
-    def get_post_by_id(self, post_id: int) -> Optional[Post]:
-        return self.db.query(Post).filter(Post.id == post_id).first()
