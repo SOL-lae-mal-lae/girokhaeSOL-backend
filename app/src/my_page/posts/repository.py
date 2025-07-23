@@ -1,6 +1,5 @@
 from sqlalchemy.orm import Session
-from app.src.community.posts.model import Post
-
+from .models import Post
 import logging
 
 def get_posts_by_user_id(db: Session, user_id: str):
