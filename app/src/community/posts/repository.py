@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from .model import Post
+from app.src.common_models.users.model import User
 from typing import Optional, List
 
 class PostRepository:
@@ -15,8 +16,13 @@ class PostRepository:
     def get_post_by_id(self, post_id: int) -> Optional[Post]:
         return self.db.query(Post).filter(Post.id == post_id).first()
 
-    def get_all_posts(self) -> List[Post]:
-        return self.db.query(Post).order_by(Post.created_at.desc()).all()
+    def get_all_posts(self) -> List[tuple]:
+        return (
+            self.db.query(Post, User.nickname)
+            .join(User, Post.user_id == User.id)
+            .order_by(Post.created_at.desc())
+            .all()
+        )
 
     def update_post(self, post_id: int, update_data: dict) -> Optional[Post]:
         post = self.db.query(Post).filter(Post.id == post_id).first()

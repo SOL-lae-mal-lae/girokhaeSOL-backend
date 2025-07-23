@@ -39,15 +39,17 @@ class PostService:
         )
 
     def get_all_posts(self) -> List[PostListResponse]:
-        posts = self.repo.get_all_posts()
+        posts_with_nicknames = self.repo.get_all_posts()
         return [
             PostListResponse(
+                id=post.id,
                 post_type=post.post_type,
                 user_id=post.user_id,
+                nickname=nickname,
                 created_at=post.created_at,
                 title=post.title,
                 content=post.content
-            ) for post in posts
+            ) for post, nickname in posts_with_nicknames
         ]
 
     def update_post(self, post_id: int, request: PostUpdateRequest) -> Optional[PostResponse]:
