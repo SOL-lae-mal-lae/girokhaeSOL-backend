@@ -4,6 +4,7 @@ from app.database.core import get_db
 from .service import fetch_user_comments
 from app.src.common_models.users.schemas import BaseResponse
 from typing import List
+from app.src.community.comments.model import Comment
 
 router = APIRouter()
 
