@@ -11,6 +11,7 @@ class AIAnalysis(Base):
 
 class AILink(Base):
     __tablename__ = "ai_links"
-    ai_analysis_id = Column(Integer, ForeignKey("ai_analysis.id"), primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    ai_analysis_id = Column(Integer, ForeignKey("ai_analysis.id"))
     news_link = Column(Text)
     sequence = Column(Integer)
