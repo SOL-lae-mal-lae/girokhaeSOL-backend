@@ -3,9 +3,14 @@ from typing import Optional
 
 # User 스키마
 class UserBase(BaseModel):
-    nickname: Optional[str] = Field(None, description="사용자 닉네임")
-    age: Optional[int] = Field(None, description="사용자 나이")
-    gender: Optional[str] = Field(None, description="사용자 성별 (male, female)")
+    id: str
+    nickname: str
+    age: Optional[int]
+    gender: Optional[str]
+    email: Optional[str]
+    posts_count: int
+    comments_count: int
+    profile_image: Optional[str]
 
 class UserCreate(UserBase):
     id: str = Field(..., description="사용자 ID")
