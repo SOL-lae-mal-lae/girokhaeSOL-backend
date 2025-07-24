@@ -96,9 +96,6 @@ class PostRepository:
         return self.db.query(Post).filter(Post.id == post_id).first()
 
     def create_tag(self, tag: TagPost) -> TagPost:
-        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-        print(tag)
-        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")   
         self.db.add(tag)
         self.db.commit()
         self.db.refresh(tag)
