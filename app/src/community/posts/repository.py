@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
-from .model import Post
 from app.src.common_models.users.model import User
 from app.src.community.comments.model import Comment
 from sqlalchemy import func
+from .model import Post, TagPost
 from typing import Optional, List
 
 class PostRepository:
@@ -91,3 +91,12 @@ class PostRepository:
         self.db.delete(post)
         self.db.commit()
         return True
+
+    def get_post_by_id(self, post_id: int) -> Optional[Post]:
+        return self.db.query(Post).filter(Post.id == post_id).first()
+
+    def create_tag(self, tag: TagPost) -> TagPost:
+        self.db.add(tag)
+        self.db.commit()
+        self.db.refresh(tag)
+        return tag

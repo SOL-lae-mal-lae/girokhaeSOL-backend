@@ -72,3 +72,6 @@ class TradeLogDetailRepository:
             sentiment = self.db.query(Sentiment).filter_by(name=s).first()
             if sentiment:
                 self.db.add(TradeLogSentiment(trade_log_id=trade_log_id, sentiment_id=sentiment.id))
+
+    def select_recent_logs(self, user_id: str):
+        return self.db.query(TradeLog).filter_by(user_id=user_id).order_by(TradeLog.date.desc()).limit(15).all()

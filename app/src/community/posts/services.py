@@ -1,7 +1,8 @@
+from datetime import datetime
 from sqlalchemy.orm import Session
 from .repository import PostRepository
-from .model import Post
-from .schemas import PostCreateRequest, PostUpdateRequest, PostResponse, PostListResponse
+from .model import Post, TagPost
+from .schemas import PostCreateRequest, PostUpdateRequest, PostResponse, PostListResponse, Tag
 from typing import Optional, List
 
 class PostService:
@@ -15,17 +16,30 @@ class PostService:
             title=request.title,
             content=request.content,
             trade_log_id=request.trade_log_id,
-            is_public=request.is_public
+            is_public=request.is_public,
+            created_at=datetime.now()
         )
-        
         created_post = self.repo.create_post(post)
         
         return {"id": created_post.id}
+    
+    def create_tags_with_post_id(self, post_id: int, tags: List[Tag])->dict:
+        for tag in tags:
+            name = tag.stock_name
+            tag_post = TagPost(
+                post_id=post_id,
+                name=name
+            )
+            result = self.repo.create_tag(tag_post)
+        return {"result": True}
 
     def get_post_by_id(self, post_id: int) -> Optional[PostResponse]:
         post_data = self.repo.get_post_with_nickname(post_id)
         if not post_data:
             return None
+        
+        post, nickname = post_data
+
         
         post, nickname = post_data
         

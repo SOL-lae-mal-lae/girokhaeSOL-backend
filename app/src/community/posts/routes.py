@@ -73,22 +73,27 @@ def get_trade_log_posts(
     }
 )
 def create_post(
-    request: PostCreateRequest,
-    db: Session = Depends(get_db)
+    body: PostCreateRequest,
+    request: Request,
+    db: Session = Depends(get_db),
 ):
     try:
-        user_id = getattr(request.state, "user", None)
-
-        # trade_log_id가 0이면 None으로 처리
-        if request.trade_log_id == 0:
-            request.trade_log_id = None
-
         service = PostService(db)
-        result = service.create_post(request, user_id)
-        return {"message": "success", "data": result}
+        user_id = request.state.user
+
+        result = service.create_post(body, user_id)
+       
     except Exception as e:
         print(f"Error creating post: {str(e)}")
-        raise HTTPException(status_code=400, detail=f"오류가 발생했습니다: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"포스트 생성 시, 오류가 발생했습니다: {str(e)}")
+
+    try:
+        final_result = service.create_tags_with_post_id(result['id'], body.tags)
+        # final_result가 dict임을 보장하므로 그대로 반환
+        return {"message": "success", "data": final_result}
+    except Exception as e:
+        print(f"Error creating post: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"태그 리스트 생성 시, 오류가 발생했습니다: {str(e)}")
 
 @router.get(
     "/{post_id}",
@@ -106,7 +111,7 @@ def get_post(
     try:
         service = PostService(db)
         result = service.get_post_by_id(post_id)
-        
+
         if not result:
             raise HTTPException(status_code=404, detail="게시글을 찾을 수 없습니다.")
         
