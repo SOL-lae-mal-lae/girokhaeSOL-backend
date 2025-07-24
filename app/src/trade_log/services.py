@@ -144,3 +144,14 @@ def get_trade_log_service_by_date(date: str, user_id: str, db: Session):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"매매일지 조회 중 오류가 발생했습니다: {str(e)}")
+
+
+def get_recent_logs(user_id: str, db: Session):
+    # id, date만 선택해서 반환
+    user = db.query(User).filter_by(id=user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="존재하지 않는 user_id입니다.")
+
+    repo = TradeLogDetailRepository(db)
+    logs = repo.select_recent_logs(user_id)
+    return logs
