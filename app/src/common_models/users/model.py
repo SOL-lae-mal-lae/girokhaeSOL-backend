@@ -11,4 +11,6 @@ class User(Base):
     nickname = Column(String(25), nullable=True, comment="사용자 닉네임")
     age = Column(Integer, nullable=True, comment="사용자 나이")
     gender = Column(String(10), nullable=True, comment="사용자 성별 (male, female)")
+    email = Column(String(100), nullable=True, comment="사용자 이메일")
+    profile_image = Column(String(255), nullable=True, comment="사용자 프로필 이미지 URL")
 
