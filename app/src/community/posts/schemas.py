@@ -20,6 +20,7 @@ class PostResponse(BaseModel):
     id: int
     post_type: bool
     user_id: str
+    nickname: str
     created_at: datetime
     title: str
     content: str

@@ -18,6 +18,14 @@ class PostRepository:
     def get_post_by_id(self, post_id: int) -> Optional[Post]:
         return self.db.query(Post).filter(Post.id == post_id).first()
 
+    def get_post_with_nickname(self, post_id: int) -> Optional[tuple]:
+        return (
+            self.db.query(Post, User.nickname)
+            .join(User, Post.user_id == User.id)
+            .filter(Post.id == post_id)
+            .first()
+        )
+
     def get_all_posts(self) -> List[tuple]:
         return (
             self.db.query(
