@@ -39,6 +39,7 @@ class PostService:
             return None
         
         post, nickname = post_data
+
         
         return PostResponse(
             id=post.id,
