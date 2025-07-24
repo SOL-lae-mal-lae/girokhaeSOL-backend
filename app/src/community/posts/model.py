@@ -12,3 +12,4 @@ class Post(Base):
     content = Column(Text, nullable=False, comment="내용")
     trade_log_id = Column(Integer, ForeignKey("trade_logs.id"), nullable=True, comment="매매일지 ID")
     is_public = Column(Boolean, default=True, comment="공개 여부")
+

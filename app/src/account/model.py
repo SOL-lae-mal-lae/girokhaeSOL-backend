@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from app.database.core import Base
 from app.src.common_models.users.model import User  # 기존 User 모델 import
 
@@ -12,5 +12,5 @@ class Account(Base):
     secret_key = Column(String(255), nullable=False)  # 외부 API 인증을 위한 secret_key
     is_primary = Column(Boolean, default=False, nullable=False)
     token = Column(String(512), nullable=True)  # OAuth 토큰
-    expires_dt = Column(String(20), nullable=True)  # 토큰 만료 시간
+    expires_dt = Column(DateTime, nullable=True)  # datetime 타입으로 변경
 

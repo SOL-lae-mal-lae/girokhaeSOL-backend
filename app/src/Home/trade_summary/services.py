@@ -44,7 +44,7 @@ class KiwoomAPIClient:
             # 4. 응답 상태 코드 확인
             if response.status_code == 200:
                 # 성공적으로 데이터 받았을 경우
-                log_debug(f"✅ API 호출 성공: {response.json()}")
+                
                 return response.json()  # API 응답 데이터 반환
             else:
                 log_error(f"❌ API 호출 실패: {response.status_code}, Response: {response.text}")
@@ -80,8 +80,7 @@ class HomeService:
                 log_error(f"❌ 키움 API 조회 실패: {api_result['error']}")
                 return {"error": api_result["error"]}
             
-            log_debug(f"🌐 키움 API 조회 결과: {api_result}")
-            
+          
             # 3. 데이터 통합 및 응답 생성 - 실제 API 응답 구조 사용
             # 총 매수금액을 투자원금으로, 실현손익을 누적손익으로 사용
             total_buy_amt = int(api_result.get("tot_buy_amt", "0"))
