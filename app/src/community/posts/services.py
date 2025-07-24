@@ -23,14 +23,17 @@ class PostService:
         return {"id": created_post.id}
 
     def get_post_by_id(self, post_id: int) -> Optional[PostResponse]:
-        post = self.repo.get_post_by_id(post_id)
-        if not post:
+        post_data = self.repo.get_post_with_nickname(post_id)
+        if not post_data:
             return None
+        
+        post, nickname = post_data
         
         return PostResponse(
             id=post.id,
             post_type=post.post_type,
             user_id=post.user_id,
+            nickname=nickname,
             created_at=post.created_at,
             title=post.title,
             content=post.content,
@@ -101,15 +104,23 @@ class PostService:
         if not updated_post:
             return None
         
+        # 업데이트된 포스트의 닉네임 정보를 가져옴
+        post_data = self.repo.get_post_with_nickname(post_id)
+        if not post_data:
+            return None
+        
+        post, nickname = post_data
+        
         return PostResponse(
-            id=updated_post.id,
-            post_type=updated_post.post_type,
-            user_id=updated_post.user_id,
-            created_at=updated_post.created_at,
-            title=updated_post.title,
-            content=updated_post.content,
-            trade_log_id=updated_post.trade_log_id,
-            is_public=updated_post.is_public
+            id=post.id,
+            post_type=post.post_type,
+            user_id=post.user_id,
+            nickname=nickname,
+            created_at=post.created_at,
+            title=post.title,
+            content=post.content,
+            trade_log_id=post.trade_log_id,
+            is_public=post.is_public
         )
 
     def delete_post(self, post_id: int) -> bool:

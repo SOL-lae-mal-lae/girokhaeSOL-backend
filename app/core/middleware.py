@@ -22,7 +22,7 @@ EXCLUDE_PATHS = ["/docs",
                  "/api/v1/trade-logs/search",
                  "/api/v1/trade-logs/statement/",
                  "/api/v1/recent-post",
-                 "/api/v1/community",
+                 # "/api/v1/community",
                  "/api/v1/financial-statements",
                  "/api/v1/stock-search",
                  ]
