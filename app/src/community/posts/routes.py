@@ -115,7 +115,7 @@ def get_post(
         if not result:
             raise HTTPException(status_code=404, detail="게시글을 찾을 수 없습니다.")
         
-        return {"message": "success", "data": {"result": result}}
+        return {"message": "success", "data": result}
     except HTTPException:
         raise
     except Exception as e:
