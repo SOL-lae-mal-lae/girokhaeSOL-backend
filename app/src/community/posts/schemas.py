@@ -2,12 +2,17 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 
+class Tag(BaseModel):
+    stock_name: str
+    stock_code: str
+
 class PostCreateRequest(BaseModel):
     post_type: bool
     title: str
     content: str
     trade_log_id: Optional[int] = None
     is_public: bool = True
+    tags: Optional[List[Tag]] = None
 
 class PostUpdateRequest(BaseModel):
     post_type: Optional[bool] = None
