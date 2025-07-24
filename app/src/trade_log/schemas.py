@@ -53,3 +53,11 @@ class TradeLogSchemaWithStockName(TradeLogCreateSchema):
 class TradeLogResponseSchema(BaseModel):
     message: str
     data: TradeLogSchemaWithStockName
+
+class RecentLogSchema(BaseModel):
+    id: int
+    date: date
+
+class RecentLogsResponseSchema(BaseModel):
+    message: str
+    data: List[RecentLogSchema]
