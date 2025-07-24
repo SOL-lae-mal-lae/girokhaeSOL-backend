@@ -111,7 +111,7 @@ def get_post(
     try:
         service = PostService(db)
         result = service.get_post_by_id(post_id)
-        
+
         if not result:
             raise HTTPException(status_code=404, detail="게시글을 찾을 수 없습니다.")
         
