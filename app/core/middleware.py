@@ -1,31 +1,29 @@
 from fastapi import Request, HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 from app.core.config import settings
-from  app.core.clerk import sdk
+from app.core.clerk import sdk
 from clerk_backend_api.security.types import AuthenticateRequestOptions
 from app.core.oauth_token import get_oauth_token
 from app.database.core import get_db
 from app.src.account.services import AccountService
-from app.core.oauth_token import get_oauth_token
 from app.logging import log_debug, log_info
 from datetime import datetime
 import logging
 
 logger = logging.getLogger(__name__)
 
-EXCLUDE_PATHS = ["/docs",
-                 "/openapi.json",
-                 "/favicon.ico",
-                 "/api/v1/auth",
-                #  "/api/v1/trade-logs",
-                #  "/api/v1/trade-logs/ai",
-                 "/api/v1/trade-logs/search",
-                 "/api/v1/trade-logs/statement/",
-                 "/api/v1/recent-post",
-                #  "/api/v1/community",
-                 "/api/v1/financial-statements",
-                 "/api/v1/stock-search",
-                 ]
+# 인증 제외 경로 리스트
+EXCLUDE_PATHS = [
+    "/docs",
+    "/openapi.json",
+    "/favicon.ico",
+    "/api/v1/auth",
+    "/api/v1/trade-logs/search",
+    "/api/v1/trade-logs/statement/",
+    "/api/v1/recent-post",
+    "/api/v1/financial-statements",
+    "/api/v1/stock-search",
+]
 
 class JWTMiddleware(BaseHTTPMiddleware):
 
@@ -44,10 +42,13 @@ class JWTMiddleware(BaseHTTPMiddleware):
                 authorized_parties=[settings.CLERK_KEY_URL]
             )
         )
+        
+        # 인증 실패 시 401 반환
         if not request_state or not getattr(request_state, 'payload', None):
             from fastapi.responses import JSONResponse
             return JSONResponse(status_code=401, content={"detail": "인증 정보가 없습니다."})
 
+        # 유저 정보 설정
         request.state.user = request_state.payload.get('sub')
         return await call_next(request)
 
@@ -75,7 +76,7 @@ class KiwoomOAuthMiddleware(BaseHTTPMiddleware):
                 request.state.token = None
                 return await call_next(request)
 
-            # ✅ 데이터베이스에서 is_primary=1인 계좌의 토큰 조회
+            # 데이터베이스에서 is_primary=1인 계좌의 토큰 조회
             try:
                 db = next(get_db())
                 account_service = AccountService(db)
@@ -92,8 +93,8 @@ class KiwoomOAuthMiddleware(BaseHTTPMiddleware):
                         return await call_next(request)
 
                     # 새로운 토큰과 만료일로 업데이트
-                    primary_account.token = token_data.token                    
-                    primary_account.expires_dt = token_data.expires_dt
+                    primary_account.token = token_data["token"]
+                    primary_account.expires_dt = token_data["expires_dt"]
                     db.commit()
                     db.refresh(primary_account)
                     logger.debug(f"새로운 토큰이 DB에 업데이트되었습니다: {primary_account.token}")
@@ -114,7 +115,7 @@ class KiwoomOAuthMiddleware(BaseHTTPMiddleware):
 
                 # 토큰 설정
                 request.state.token = primary_account.token  # 요청에 토큰을 설정
-                logger.debug(f"Middleware token set: token={self.token}, expires_dt={self.expires_dt}")
+                logger.debug(f"Middleware token set: token={request.state.token}, expires_dt={primary_account.expires_dt}")
 
             except Exception as e:
                 logger.error(f"Failed to fetch or update token for user {user_id}: {e}")
