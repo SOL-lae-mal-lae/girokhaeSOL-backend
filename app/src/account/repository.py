@@ -141,4 +141,31 @@ class AccountRepository:
             raise
 
 
-
+    def update_token(self, user_id: str, token: str, expires_dt: str):
+        """사용자의 주계좌의 토큰과 만료일을 업데이트"""
+        try:
+            # user_id와 is_primary가 True인 주계좌 조회
+            account = self.db.query(Account).filter(
+                Account.user_id == user_id,
+                Account.is_primary == True
+            ).first()
+            
+            if not account:
+                log_error(f"주계좌를 찾을 수 없음: user_id={user_id}")
+                return None
+            
+            # 토큰과 만료일 업데이트
+            account.token = token
+            account.expires_dt = expires_dt
+            
+            # 변경 사항 DB에 반영
+            self.db.commit()  # commit을 사용하여 변경사항을 저장
+            self.db.refresh(account)  # 최신 상태로 갱신
+            
+            log_info(f"🔍 주계좌 토큰 업데이트 완료 - user_id: {user_id}, token: {token}, expires_dt: {expires_dt}")
+            return account  # 변경된 계좌 객체 반환
+            
+        except Exception as e:
+            log_error(f"🔍 주계좌 토큰 업데이트 중 오류 발생 - user_id={user_id}, 오류: {e}")
+            self.db.rollback()  # 오류 발생 시 롤백
+            raise
