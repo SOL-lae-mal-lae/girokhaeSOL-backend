@@ -12,7 +12,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# 인증 제외 경로 리스트
 EXCLUDE_PATHS = [
     "/docs",
     "/openapi.json",
@@ -24,7 +23,6 @@ EXCLUDE_PATHS = [
     "/api/v1/financial-statements",
     "/api/v1/stock-search",
 ]
-
 class JWTMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next):
