@@ -61,3 +61,20 @@ class RecentLogSchema(BaseModel):
 class RecentLogsResponseSchema(BaseModel):
     message: str
     data: List[RecentLogSchema]
+
+class TradeLogRequestByIdSchema(BaseModel):
+    user_id: str
+    trade_log_id: int
+
+
+class TradeLogByIdSchema(BaseModel):
+    date: date
+    summaries: TradeSummarySchema
+    trade_details: List[TradeDetailSchema]
+    rationale: str
+    evaluation: str
+    charts: List[ChartSchema]
+    
+class TradeLogByIdResponseSchema(TradeLogByIdSchema):
+    message: str
+    data: TradeLogByIdSchema

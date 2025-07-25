@@ -5,7 +5,7 @@ from .repository import TradeLogDetailRepository
 from .model import TradeLog, TradeSummary, TradeDetail, Chart, NewsLink, TradeLogSentiment, Sentiment
 from .schemas import TradeLogResponseSchema, TradeSummarySchema, TradeDetailSchema, ChartSchema, NewsLinkSchema
 from ..stock_search.model import Stock
-from ...logging import log_info
+from ...logging import log_debug, log_info
 from .ai.repository import AIRepository
 from .ai.schemas import AIAnalysisResponse, AILinkSchema
 from dotenv import load_dotenv
@@ -140,6 +140,63 @@ def get_trade_log_service_by_date(date: str, user_id: str, db: Session):
         
         return result
         
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"매매일지 조회 중 오류가 발생했습니다: {str(e)}")
+
+def get_trade_log_service_by_id(user_id: str, trade_log_id: int, db: Session):
+    """
+    trade_log_id와 user_id로 매매일지 상세 정보를 조회합니다.
+    """
+    try:
+        repo = TradeLogDetailRepository(db)
+        data = repo.get_trade_log_by_id(user_id, trade_log_id)  
+        if not data:
+            raise HTTPException(status_code=404, detail="해당 매매일지를 찾을 수 없습니다.")
+        trade_log = data["trade_log"]
+        trade_summary = data["trade_summary"]
+        trade_details = data["trade_details"]
+        charts = data["charts"]
+        # 결과 데이터 구성
+        result = {
+            "date": trade_log.date,
+            "summaries": {
+                "total_buy_amount": trade_summary.total_buy_amount if trade_summary else 0,
+                "total_sell_amount": trade_summary.total_sell_amount if trade_summary else 0,
+                "total_cmsn_tax": trade_summary.total_cmsn_tax if trade_summary else 0.0,
+                "settlement_amount": trade_summary.settlement_amount if trade_summary else 0,
+                "profit_rate": trade_summary.profit_rate if trade_summary else 0.0
+            },
+            "trade_details": [
+                {
+                    "account_id": detail.account_id,
+                    "stock_name": detail.stock_name,
+                    "stock_code": detail.stock_code,
+                    "avg_buy_price": detail.avg_buy_price,
+                    "avg_sell_price": detail.avg_sell_price,
+                    "buy_quantity": detail.buy_quantity,
+                    "sell_quantity": detail.sell_quantity,
+                    "cmsn_alm_tax": detail.cmsn_alm_tax,
+                    "profit_amount": detail.profit_amount,
+                    "profit_rate": detail.profit_rate
+                }
+                for detail in trade_details
+            ],
+            "charts": [
+                {
+                    "stock_name": chart_tuple[1] if chart_tuple[1] else "",
+                    "stock_code": chart_tuple[0].stock_code,
+                    "start_date": chart_tuple[0].start_date,
+                    "end_date": chart_tuple[0].end_date,
+                    "sequence": chart_tuple[0].sequence
+                }
+                for chart_tuple in charts
+            ],
+            "rationale": trade_log.rationale,
+            "evaluation": trade_log.evaluation,
+        }
+        return result
     except HTTPException:
         raise
     except Exception as e:

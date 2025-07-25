@@ -75,3 +75,35 @@ class TradeLogDetailRepository:
 
     def select_recent_logs(self, user_id: str):
         return self.db.query(TradeLog).filter_by(user_id=user_id).order_by(TradeLog.date.desc()).limit(15).all()
+
+    # user_id, trade_log_id로 매매일지 상세 조회
+    def get_trade_log_by_id(self, user_id: str, trade_log_id: int):
+        trade_log = self.db.query(TradeLog).filter(
+            TradeLog.id == trade_log_id,
+            TradeLog.user_id == user_id
+        ).first()
+        if not trade_log:
+            return None
+        # trade_summaries
+        trade_summary = self.db.query(TradeSummary).filter(
+            TradeSummary.trade_log_id == trade_log_id
+        ).first()
+        # trade_details
+        trade_details = self.db.query(TradeDetail).filter(
+            TradeDetail.trade_log_id == trade_log_id
+        ).all()
+        # charts (stock_name 포함)
+        from ..stock_search.model import Stock
+        charts = self.db.query(Chart, Stock.stock_name).outerjoin(
+            Stock, Chart.stock_code == Stock.stock_code
+        ).filter(
+            Chart.trade_log_id == trade_log_id
+        ).order_by(Chart.sequence.asc()).all()
+        
+        return {
+            "trade_log": trade_log,
+            "trade_summary": trade_summary,
+            "trade_details": trade_details,
+            "charts": charts
+        }
+        

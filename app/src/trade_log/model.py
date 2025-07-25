@@ -63,3 +63,4 @@ class TradeLogSentiment(Base):
     __tablename__ = "trade_log_sentiments"
     trade_log_id = Column(Integer, ForeignKey("trade_logs.id"), primary_key=True)
     sentiment_id = Column(Integer, ForeignKey("sentiments.id"), primary_key=True)
+
