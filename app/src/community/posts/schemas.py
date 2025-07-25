@@ -41,6 +41,7 @@ class PostListResponse(BaseModel):
     title: str
     content: str
     comment_count: int
+    tags: List[str]
 
 class PostCreateResponse(BaseModel):
     message: str

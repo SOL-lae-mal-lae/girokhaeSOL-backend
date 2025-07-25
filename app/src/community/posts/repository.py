@@ -27,28 +27,51 @@ class PostRepository:
         )
 
     def get_all_posts(self) -> List[tuple]:
+
+        subq = (
+            self.db.query(
+                TagPost.post_id,
+                func.group_concat(TagPost.name).label('tags')
+            )
+            .group_by(TagPost.post_id)
+            .subquery()
+        )
+
         return (
             self.db.query(
                 Post, 
                 User.nickname,
-                func.count(Comment.id).label('comment_count')
+                func.count(Comment.id).label('comment_count'),
+                subq.c.tags
             )
             .join(User, Post.user_id == User.id)
             .outerjoin(Comment, Post.id == Comment.post_id)
+            .outerjoin(subq, Post.id == subq.c.post_id)
             .group_by(Post.id, User.nickname)
             .order_by(Post.created_at.desc())
             .all()
         )
 
     def get_general_posts(self) -> List[tuple]:
+
+        subq = (
+            self.db.query(
+                TagPost.post_id,
+                func.group_concat(TagPost.name).label('tags')
+            )
+            .group_by(TagPost.post_id)
+            .subquery()
+        )
         return (
             self.db.query(
                 Post, 
                 User.nickname,
-                func.count(Comment.id).label('comment_count')
+                func.count(Comment.id).label('comment_count'),
+                subq.c.tags
             )
             .join(User, Post.user_id == User.id)
             .outerjoin(Comment, Post.id == Comment.post_id)
+            .outerjoin(subq, Post.id == subq.c.post_id)
             .filter(Post.post_type == True)
             .group_by(Post.id, User.nickname)
             .order_by(Post.created_at.desc())
@@ -56,14 +79,25 @@ class PostRepository:
         )
 
     def get_trade_log_posts(self) -> List[tuple]:
+
+        subq = (
+            self.db.query(
+                TagPost.post_id,
+                func.group_concat(TagPost.name).label('tags')
+            )
+            .group_by(TagPost.post_id)
+            .subquery()
+        )
         return (
             self.db.query(
                 Post, 
                 User.nickname,
-                func.count(Comment.id).label('comment_count')
+                func.count(Comment.id).label('comment_count'),
+                subq.c.tags
             )
             .join(User, Post.user_id == User.id)
             .outerjoin(Comment, Post.id == Comment.post_id)
+            .outerjoin(subq, Post.id == subq.c.post_id)
             .filter(Post.post_type == False)
             .group_by(Post.id, User.nickname)
             .order_by(Post.created_at.desc())
