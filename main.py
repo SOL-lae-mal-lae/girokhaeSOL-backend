@@ -19,6 +19,7 @@ from app.src.community.posts.routes import router as posts_router
 from app.src.community.comments.routes import router as comments_router
 from app.src.common_models.users.model import User
 import logging
+from app.src.my_page.tradelogs.router import router as my_page_tradelogs_router
 
 from app.src.account.model import Account
 from app.src.community.posts.model import Post
@@ -157,6 +158,8 @@ app.include_router(my_page_comments_router, prefix="/api/v1/my-page", tags=["my_
 app.include_router(my_page_posts_router, prefix="/api/v1/my-page", tags=["my_page_posts"])
 app.include_router(posts_router, prefix="/api/v1/community", tags=["community"])
 app.include_router(comments_router, prefix="/api/v1/community", tags=["community"])
+app.include_router(my_page_tradelogs_router, prefix="/api/v1/my-page", tags=["my_page_tradelogs"])
+
 
 @app.get("/api/v1/")
 def read_root():
