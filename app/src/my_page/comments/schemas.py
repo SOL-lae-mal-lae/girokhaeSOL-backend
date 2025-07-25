@@ -10,6 +10,7 @@ class CommentResponse(CommentBase):
     post_id: int
     user_id: str
     created_at: datetime  # Changed to datetime for proper validation
+    post_title: str  # Added post_title to include the title of the post
 
     class Config:
         orm_mode = True  # Ensures Pydantic can handle ORM models
