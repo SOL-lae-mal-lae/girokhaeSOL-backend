@@ -12,4 +12,4 @@ def get_comments_with_post_title_by_user_id(db: Session, user_id: str):
     return db.query(Comment, Post.title.label("post_title"))\
         .join(Post, Comment.post_id == Post.id)\
         .filter(Comment.user_id == user_id)\
-        .all()
+        .order_by(Comment.created_at.desc()).all()
