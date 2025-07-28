@@ -21,14 +21,15 @@ class CommentService:
         return {"id": created_comment.id}
 
     def get_comments_by_post_id(self, post_id: int) -> List[CommentListResponse]:
-        comments = self.repo.get_comments_by_post_id(post_id)
+        comments_with_data = self.repo.get_comments_with_nickname_by_post_id(post_id)
         return [
             CommentListResponse(
                 id=comment.id,
                 user_id=comment.user_id,
+                nickname=nickname,
                 content=comment.content,
                 created_at=comment.created_at
-            ) for comment in comments
+            ) for comment, nickname in comments_with_data
         ]
 
     def delete_comment(self, comment_id: int) -> bool:
@@ -41,12 +42,20 @@ class CommentService:
         if not updated_comment:
             return None
         
+        # 업데이트된 댓글의 닉네임 정보를 가져옴
+        comment_data = self.repo.get_comment_with_nickname_by_id(comment_id)
+        if not comment_data:
+            return None
+        
+        comment, nickname = comment_data
+        
         return CommentResponse(
-            id=updated_comment.id,
-            post_id=updated_comment.post_id,
-            user_id=updated_comment.user_id,
-            content=updated_comment.content,
-            created_at=updated_comment.created_at
+            id=comment.id,
+            post_id=comment.post_id,
+            user_id=comment.user_id,
+            nickname=nickname,
+            content=comment.content,
+            created_at=comment.created_at
         )
 
     def check_comment_ownership(self, comment_id: int, user_id: str) -> bool:

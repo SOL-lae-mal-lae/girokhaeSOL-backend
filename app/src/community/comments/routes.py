@@ -17,11 +17,12 @@ router = APIRouter()
 def create_comment(
     post_id: int,
     request: CommentCreateRequest,
+    http_request: Request,
     db: Session = Depends(get_db)
 ):
     try:
-        user_id = getattr(request.state, "user", None)
-
+        # user_id = getattr(request.state, "user", None)
+        user_id = getattr(http_request.state, "user", None)
         service = CommentService(db)
         result = service.create_comment(request, post_id, user_id)
         return {"message": "success", "data": result}

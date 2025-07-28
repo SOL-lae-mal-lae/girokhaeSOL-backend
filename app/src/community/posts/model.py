@@ -12,3 +12,9 @@ class Post(Base):
     content = Column(Text, nullable=False, comment="내용")
     trade_log_id = Column(Integer, ForeignKey("trade_logs.id"), nullable=True, comment="매매일지 ID")
     is_public = Column(Boolean, default=True, comment="공개 여부")
+
+class TagPost(Base):
+    __tablename__ = "tags"
+    id = Column(Integer, primary_key=True, index=True, comment="태그 ID")
+    post_id = Column(Integer, ForeignKey("posts.id"), nullable=False, comment="게시글 ID")
+    name = Column(String(200), nullable=False, comment="태그 이름")

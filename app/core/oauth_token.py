@@ -102,8 +102,10 @@ async def get_oauth_token(user_id: str):
         if not token_type or not token:
             log_error(f'토큰 정보가 불완전함: token_type={token_type}, token={token}')
             return None
-
+        
+        account_repo.update_token(user_id, f'{token_type} {token}', expires_dt)
         return {"token": f'{token_type} {token}', "expires_dt": expires_dt}
+    
     except Exception as e:
         log_error(f'oauth token 발급 오류 : {str(e)}')
         return None

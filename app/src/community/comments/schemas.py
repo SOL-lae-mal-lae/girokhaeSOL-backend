@@ -12,12 +12,14 @@ class CommentResponse(BaseModel):
     id: int
     post_id: int
     user_id: str
+    nickname: str
     content: str
     created_at: datetime
 
 class CommentListResponse(BaseModel):
     id: int
     user_id: str
+    nickname: str
     content: str
     created_at: datetime
 

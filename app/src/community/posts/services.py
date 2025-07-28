@@ -1,7 +1,8 @@
+from datetime import datetime
 from sqlalchemy.orm import Session
 from .repository import PostRepository
-from .model import Post
-from .schemas import PostCreateRequest, PostUpdateRequest, PostResponse, PostListResponse
+from .model import Post, TagPost
+from .schemas import PostCreateRequest, PostUpdateRequest, PostResponse, PostListResponse, Tag
 from typing import Optional, List
 
 class PostService:
@@ -15,22 +16,35 @@ class PostService:
             title=request.title,
             content=request.content,
             trade_log_id=request.trade_log_id,
-            is_public=request.is_public
+            is_public=request.is_public,
+            created_at=datetime.now()
         )
-        
         created_post = self.repo.create_post(post)
         
         return {"id": created_post.id}
+    
+    def create_tags_with_post_id(self, post_id: int, tags: List[Tag])->dict:
+        for tag in tags:
+            name = tag.stock_name
+            tag_post = TagPost(
+                post_id=post_id,
+                name=name
+            )
+            result = self.repo.create_tag(tag_post)
+        return {"result": True}
 
     def get_post_by_id(self, post_id: int) -> Optional[PostResponse]:
-        post = self.repo.get_post_by_id(post_id)
-        if not post:
+        post_data = self.repo.get_post_with_nickname(post_id)
+        if not post_data:
             return None
+        
+        post, nickname = post_data
         
         return PostResponse(
             id=post.id,
             post_type=post.post_type,
             user_id=post.user_id,
+            nickname=nickname,
             created_at=post.created_at,
             title=post.title,
             content=post.content,
@@ -39,15 +53,52 @@ class PostService:
         )
 
     def get_all_posts(self) -> List[PostListResponse]:
-        posts = self.repo.get_all_posts()
+        posts_with_data = self.repo.get_all_posts()
+
         return [
             PostListResponse(
+                id=post.id,
                 post_type=post.post_type,
                 user_id=post.user_id,
+                nickname=nickname,
                 created_at=post.created_at,
                 title=post.title,
-                content=post.content
-            ) for post in posts
+                content=post.content,
+                comment_count=comment_count,
+                tags= tags.split(',') if tags else []
+            ) for post, nickname, comment_count, tags in posts_with_data
+        ]
+
+    def get_general_posts(self) -> List[PostListResponse]:
+        posts_with_data = self.repo.get_general_posts()
+        return [
+            PostListResponse(
+                id=post.id,
+                post_type=post.post_type,
+                user_id=post.user_id,
+                nickname=nickname,
+                created_at=post.created_at,
+                title=post.title,
+                content=post.content,
+                comment_count=comment_count,
+                tags=tags.split(',') if tags else []
+            ) for post, nickname, comment_count, tags in posts_with_data
+        ]
+
+    def get_trade_log_posts(self) -> List[PostListResponse]:
+        posts_with_data = self.repo.get_trade_log_posts()
+        return [
+            PostListResponse(
+                id=post.id,
+                post_type=post.post_type,
+                user_id=post.user_id,   
+                nickname=nickname,
+                created_at=post.created_at,
+                title=post.title,
+                content=post.content,
+                comment_count=comment_count,
+                tags=tags.split(',') if tags else []
+            ) for post, nickname, comment_count, tags in posts_with_data
         ]
 
     def update_post(self, post_id: int, request: PostUpdateRequest) -> Optional[PostResponse]:
@@ -68,15 +119,23 @@ class PostService:
         if not updated_post:
             return None
         
+        # 업데이트된 포스트의 닉네임 정보를 가져옴
+        post_data = self.repo.get_post_with_nickname(post_id)
+        if not post_data:
+            return None
+        
+        post, nickname = post_data
+        
         return PostResponse(
-            id=updated_post.id,
-            post_type=updated_post.post_type,
-            user_id=updated_post.user_id,
-            created_at=updated_post.created_at,
-            title=updated_post.title,
-            content=updated_post.content,
-            trade_log_id=updated_post.trade_log_id,
-            is_public=updated_post.is_public
+            id=post.id,
+            post_type=post.post_type,
+            user_id=post.user_id,
+            nickname=nickname,
+            created_at=post.created_at,
+            title=post.title,
+            content=post.content,
+            trade_log_id=post.trade_log_id,
+            is_public=post.is_public
         )
 
     def delete_post(self, post_id: int) -> bool:
