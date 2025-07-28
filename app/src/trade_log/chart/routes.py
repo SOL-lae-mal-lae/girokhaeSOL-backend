@@ -1,8 +1,12 @@
+import os
 from fastapi import APIRouter, HTTPException, status, Request
 from .schemas import ChartRequest, ChartResponse, ErrorResponse
 from .service import ChartService
+from dotenv import load_dotenv
 
 router = APIRouter()
+load_dotenv()
+CHART_KEY = os.getenv("CHART_KEY","")
 
 @router.post(
     "/chart",
@@ -22,7 +26,7 @@ def get_chart_data(request: Request, chart_request: ChartRequest):
     - **upd_stkpc_tp**: 수정주가구분 (0 또는 1, 기본값: 1)
     """
     try:
-        token = request.state.token
+        token = CHART_KEY
         service = ChartService()
         chart_data = service.get_chart_data(chart_request, token)
         return {"message": "차트 불러오기 완료", "data": chart_data}
