@@ -109,7 +109,10 @@ class KiwoomOAuthMiddleware(BaseHTTPMiddleware):
                     primary_account.expires_dt = token_data["expires_dt"]
                     db.commit()
                     db.refresh(primary_account)
+                    request.state.token = token_data["token"]
                     logger.debug(f"새로운 토큰이 DB에 저장되었습니다: {primary_account.token}")
+
+                    return await call_next(request)
 
                 # 토큰 설정
                 request.state.token = primary_account.token  # 요청에 토큰을 설정
