@@ -96,6 +96,9 @@ class KiwoomOAuthMiddleware(BaseHTTPMiddleware):
                     db.commit()
                     db.refresh(primary_account)
                     logger.debug(f"새로운 토큰이 DB에 업데이트되었습니다: {primary_account.token}")
+                    request.state.token = token_data["token"]
+
+                    return await call_next(request)
 
                 # 만약 토큰이 없으면 새로 발급
                 elif not primary_account.token:
@@ -122,5 +125,4 @@ class KiwoomOAuthMiddleware(BaseHTTPMiddleware):
                 logger.error(f"Failed to fetch or update token for user {user_id}: {e}")
                 return await call_next(request)
 
-        response = await call_next(request)
-        return response
+        return await call_next(request)
