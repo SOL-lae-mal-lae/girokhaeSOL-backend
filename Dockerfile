@@ -10,5 +10,5 @@ RUN pip install --upgrade pip && \
 COPY . .
 
 EXPOSE 8000
-
+ENV TZ Asia/Seoul
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
